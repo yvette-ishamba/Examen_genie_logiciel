@@ -4,11 +4,18 @@ from sqlalchemy.orm import sessionmaker, declarative_base
 from dotenv import load_dotenv
 
 load_dotenv()
-DATABASE_URL = "mysql+pymysql://root:Lesoutils%401907@localhost:3306/taxe_app_db"
 
-SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL", DATABASE_URL)
+# Get database URL from environment variable, fallback to SQLite for local development safety
+SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL", "mysql+pymysql://root:Yvette%40123@localhost:3306/taxe_app_db")
 
-engine = create_engine(SQLALCHEMY_DATABASE_URL)
+# Dialect-specific engine arguments
+connect_args = {}
+if SQLALCHEMY_DATABASE_URL.startswith("sqlite"):
+    connect_args["check_same_thread"] = False
+
+engine = create_engine(
+    SQLALCHEMY_DATABASE_URL, connect_args=connect_args
+)
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 

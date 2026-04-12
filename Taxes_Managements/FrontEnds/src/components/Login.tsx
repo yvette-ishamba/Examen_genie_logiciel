@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Landmark, User, Lock, Eye, LogIn, UserPlus, ShieldCheck } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { authApi } from '../services/api';
@@ -19,8 +19,8 @@ export default function Login() {
       // Typically save token to localStorage or context
       localStorage.setItem('token', response.access_token);
       console.log('Connexion réussie', response);
-      navigate('/onboarding');
-      // navigate('/dashboard'); // À décommenter quand vous aurez une route dashboard
+      // navigate('/onboarding');
+      navigate('/dashboard'); // Redirection vers le tableau de bord
     } catch (err: any) {
       setError(err.message || 'Une erreur est survenue');
     } finally {

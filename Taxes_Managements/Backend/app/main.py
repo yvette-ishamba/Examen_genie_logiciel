@@ -2,7 +2,10 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.database import engine, Base
-from app.routes import auth, users, vendeurs, taxes, paiements, signalements
+from app.routes import auth, users, vendeurs, taxes, paiements, signalements, demandes
+
+# Import explicit pour assurer la création de la table par SQLAlchemy
+from app.models.demande import DemandeAcces
 
 # Create all tables in the database
 Base.metadata.create_all(bind=engine)
@@ -29,6 +32,7 @@ app.include_router(vendeurs.router)
 app.include_router(taxes.router)
 app.include_router(paiements.router)
 app.include_router(signalements.router)
+app.include_router(demandes.router)
 
 @app.get("/")
 def root():
