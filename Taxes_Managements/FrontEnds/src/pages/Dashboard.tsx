@@ -138,7 +138,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Recent Activity Feed */}
+
       <section className="pb-8">
         <h3 className="font-bold text-lg mb-4 px-1">Dernières Collectes</h3>
         <div className="space-y-3">
