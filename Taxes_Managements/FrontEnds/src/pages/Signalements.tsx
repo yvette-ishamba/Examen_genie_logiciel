@@ -1,5 +1,3 @@
-import React from 'react';
-
 export default function Signalements() {
   return (
     <div className="p-6">

@@ -1,5 +1,6 @@
-from sqlalchemy import Column, Integer, String, Boolean, DateTime
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey
 from datetime import datetime
+from sqlalchemy.orm import relationship
 from app.database import Base
 
 class User(Base):
@@ -11,4 +12,10 @@ class User(Base):
     full_name = Column(String(255), nullable=True)
     is_active = Column(Boolean, default=True)
     is_admin = Column(Boolean, default=False)
+    role = Column(String(50), nullable=True)
+    phone_number = Column(String(50), nullable=True)
+    vendeur_id = Column(Integer, ForeignKey("vendeurs.id"), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
+
+    # Relationships
+    vendeur = relationship("Vendeur")

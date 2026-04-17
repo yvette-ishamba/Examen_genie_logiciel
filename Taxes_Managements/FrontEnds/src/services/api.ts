@@ -1,8 +1,37 @@
-const API_URL = 'http://localhost:8000'; // Replace with the actual FastAPI backend URL if different
+export const API_URL = 'http://localhost:8000';
+
+/**
+ * Base request function to handle common logic like headers and error responses.
+ */
+export async function request(endpoint: string, options: RequestInit = {}) {
+  const token = localStorage.getItem('token');
+  
+  const headers = new Headers(options.headers || {});
+  
+  if (!headers.has('Content-Type') && !(options.body instanceof URLSearchParams)) {
+    headers.set('Content-Type', 'application/json');
+  }
+  
+  if (token) {
+    headers.set('Authorization', `Bearer ${token}`);
+  }
+
+  const response = await fetch(`${API_URL}${endpoint}`, {
+    ...options,
+    headers,
+  });
+
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    throw new Error(data.detail || 'Une erreur est survenue');
+  }
+
+  return data;
+}
 
 export const authApi = {
   login: async (identifier: string, password: string) => {
-    // FastAPI often uses form-urlencoded for its default OAuth2 setup
     const formData = new URLSearchParams();
     formData.append('username', identifier);
     formData.append('password', password);
@@ -25,11 +54,8 @@ export const authApi = {
 
 export const usersApi = {
   register: async (payload: any) => {
-    const response = await fetch(`${API_URL}/users/register`, {
+    return request('/users/register', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
       body: JSON.stringify({ 
         role: payload.role, 
         full_name: payload.fullName, 
@@ -40,46 +66,23 @@ export const usersApi = {
         emplacement: payload.emplacement
       }),
     });
-
-    if (!response.ok) {
-      throw new Error('Erreur lors de la création du compte');
-    }
-
-    return response.json();
   },
   checkEmail: async (email: string) => {
-    const response = await fetch(`${API_URL}/users/check-email?email=${encodeURIComponent(email)}`);
-    if (!response.ok) {
-        throw new Error('Erreur lors de la vérification de l\'email');
-    }
-    return response.json();
+    return request(`/users/check-email?email=${encodeURIComponent(email)}`);
   },
   forgotPassword: async (email: string) => {
-    const response = await fetch(`${API_URL}/users/forgot-password`, {
+    return request('/users/forgot-password', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
       body: JSON.stringify({ email }),
     });
-    if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.detail || 'Erreur lors de la demande de réinitialisation');
-    }
-    return response.json();
   },
   resetPasswordWithToken: async (token: string, newPassword: string) => {
-    const response = await fetch(`${API_URL}/users/reset-password-with-token`, {
+    return request('/users/reset-password-with-token', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
       body: JSON.stringify({ token, new_password: newPassword }),
     });
-    if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.detail || 'Erreur lors de la réinitialisation du mot de passe');
-    }
-    return response.json();
+  },
+  getMe: async () => {
+    return request('/users/me');
   }
 };

@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom';
 import Login from './pages/Login';
 import Onboarding from './pages/Onboarding';
 import ResetPassword from './pages/ResetPassword';
@@ -8,29 +8,150 @@ import Collecte from './pages/Collecte';
 import Vendeurs from './pages/Vendeurs';
 import Taxes from './pages/Taxes';
 import Signalements from './pages/Signalements';
+import { taxeApi } from './services/taxe_api';
+
+import ProtectedRoute from './ui/ProtectedRoute';
+import { statsApi } from './services/stats_api';
+import { setDashboardData, setLoading, setError } from './store/slices/dashboardSlice';
+import { paiementApi } from './services/paiement_api';
+import { setCollecteData, setLoading as setCollecteLoading, setError as setCollecteError } from './store/slices/collecteAdminSlice';
+
+// Loaders
+const taxesLoader = async () => {
+  return taxeApi.getAll();
+};
+
+const collecteLoader = async () => {
+  return taxeApi.getView();
+};
+
+const collecteAdminLoader = async () => {
+  store.dispatch(setCollecteLoading(true));
+  try {
+    const [list, agents] = await Promise.all([
+      paiementApi.getList(1), // initial page 1 — pagination is handled in the component
+      paiementApi.getByAgent(),
+    ]);
+    store.dispatch(setCollecteData({ list, agents }));
+    return { list, agents };
+  } catch (err: any) {
+    const msg = err.message || 'Erreur lors du chargement des collectes';
+    store.dispatch(setCollecteError(msg));
+    throw new Error(msg);
+  }
+};
+
+const dashboardLoader = async () => {
+  store.dispatch(setLoading(true));
+  try {
+    const data = await statsApi.getDashboardData();
+    store.dispatch(setDashboardData(data));
+    return data;
+  } catch (err: any) {
+    const msg = err.message || 'Erreur lors du chargement des statistiques';
+    store.dispatch(setError(msg));
+    throw new Error(msg);
+  }
+};
+
+const router = createBrowserRouter([
+  {
+    path: '/',
+    element: <Navigate to="/dashboard" replace />,
+  },
+  {
+    path: '/login',
+    element: <Login />,
+  },
+  {
+    path: '/onboarding',
+    element: <Onboarding />,
+  },
+  {
+    path: '/reset-password',
+    element: <ResetPassword />,
+  },
+  {
+    element: <AppLayout />,
+    children: [
+      {
+        element: <ProtectedRoute requireAdmin />,
+        children: [
+          {
+            path: 'dashboard',
+            element: <Dashboard />,
+            loader: dashboardLoader,
+          },
+          {
+            path: 'taxes',
+            element: <Taxes />,
+            loader: taxesLoader,
+          },
+        ],
+      },
+      {
+        element: <ProtectedRoute allowedRoles={['Agent de Collecte']} />,
+        children: [
+          {
+            path: 'collecte',
+            element: <Collecte />,
+            loader: collecteLoader,
+          },
+        ],
+      },
+      {
+        element: <ProtectedRoute allowedRoles={['Autorité Locale']} />,
+        children: [
+          {
+            path: 'collecte',
+            element: <Collecte />,
+            loader: collecteAdminLoader,
+          },
+        ],
+      },
+      {
+        element: <ProtectedRoute allowedRoles={['Vendeur', 'Agent de Collecte', 'Autorité Locale']} />,
+        children: [
+          {
+            path: 'vendeurs',
+            element: <Vendeurs />,
+          },
+          {
+            path: 'signalements',
+            element: <Signalements />,
+          },
+        ],
+      },
+    ],
+  },
+]);
+
+import { Provider } from 'react-redux';
+import { store } from './store';
+import { useAppDispatch } from './store/hooks';
+import { restoreSession } from './store/slices/authSlice';
+import { useEffect } from 'react';
+
+/**
+ * Component to trigger session restoration on mount
+ */
+function AuthInitialize({ children }: { children: React.ReactNode }) {
+  const dispatch = useAppDispatch();
+  
+  useEffect(() => {
+    dispatch(restoreSession());
+  }, [dispatch]);
+
+  return <>{children}</>;
+}
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        {/* Auth Routes */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/onboarding" element={<Onboarding />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
-
-        {/* Protected/Dashboard Routes */}
-        <Route element={<AppLayout />}>
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/collecte" element={<Collecte />} />
-          <Route path="/vendeurs" element={<Vendeurs />} />
-          <Route path="/taxes" element={<Taxes />} />
-          <Route path="/signalements" element={<Signalements />} />
-        </Route>
-
-        {/* Redirects */}
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
-      </Routes>
-    </BrowserRouter>
+    <Provider store={store}>
+      <AuthInitialize>
+        <RouterProvider router={router} />
+      </AuthInitialize>
+    </Provider>
   );
 }
 

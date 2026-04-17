@@ -1,11 +1,15 @@
 import { configureStore } from '@reduxjs/toolkit';
-import authReducer from './slices/authSlice';
 import onboardingReducer from './slices/onboardingSlice';
+import authReducer from './slices/authSlice';
+import dashboardReducer from './slices/dashboardSlice';
+import collecteAdminReducer from './slices/collecteAdminSlice';
 
 export const store = configureStore({
   reducer: {
-    auth: authReducer,
     onboarding: onboardingReducer,
+    auth: authReducer,
+    dashboard: dashboardReducer,
+    collecteAdmin: collecteAdminReducer,
   },
 });
 

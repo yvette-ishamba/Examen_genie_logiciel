@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
 
 class VendeurBase(BaseModel):
     nom: str
@@ -19,3 +19,37 @@ class VendeurOut(VendeurBase):
 
     class Config:
         from_attributes = True
+
+class VendeurViewOut(BaseModel):
+    id: int
+    noms: str
+    telephone: str
+    id_nat: str
+    marche: str
+
+    class Config:
+        from_attributes = True
+
+class PaymentHistoryItem(BaseModel):
+    id: int
+    taxe_nom: str
+    montant: float
+    date_paiement: datetime
+    reference: str
+
+class VendeurMe(BaseModel):
+    id: int
+    nom: str
+    prenom: str
+    identifiant_national: str
+    telephone: str
+    emplacement: str
+    status: str # "À JOUR" or "EN RETARD"
+    total_paye: float
+    derniere_collecte: Optional[str] # "Hier", "Aujourd'hui", or date
+    history: List[PaymentHistoryItem]
+
+class VendeurStatusOut(VendeurViewOut):
+    status: str
+    derniere_collecte: Optional[datetime]
+    montant_total: float
