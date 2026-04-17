@@ -198,7 +198,7 @@ export default function Onboarding() {
               <div className="space-y-1.5">
                 <label className="block text-[0.7rem] font-bold text-[#0047a5] uppercase tracking-wide">Numéro de téléphone</label>
                 <div className="flex gap-2">
-                  <div className="w-20 bg-[#f1f5f9] rounded-lg flex items-center justify-center font-bold text-slate-800 text-sm border border-transparent">+225</div>
+                  <div className="w-20 bg-[#f1f5f9] rounded-lg flex items-center justify-center font-bold text-slate-800 text-sm border border-transparent">+243</div>
                   <input
                     type="tel"
                     placeholder="00 00 00 00"

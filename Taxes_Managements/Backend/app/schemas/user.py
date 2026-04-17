@@ -5,8 +5,19 @@ from typing import Optional
 class UserBase(BaseModel):
     email: EmailStr
     full_name: Optional[str] = None
+    role: Optional[str] = None
+    phone_number: Optional[str] = None
     is_active: Optional[bool] = True
     is_admin: Optional[bool] = False
+
+class UserRegister(BaseModel):
+    email: EmailStr
+    password: str
+    role: str
+    full_name: str
+    phone_number: str
+    identifiant_national: Optional[str] = None
+    emplacement: Optional[str] = None
 
 class UserCreate(UserBase):
     password: str

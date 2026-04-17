@@ -1,20 +1,17 @@
 import { useState } from 'react';
 import { Landmark, User, Lock, Eye, LogIn, UserPlus, ShieldCheck } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useAppDispatch, useAppSelector } from '../store/hooks';
-import { loginUser, clearError } from '../store/slices/authSlice';
+import { useLogin } from '../ui/loginContext';
 import { usersApi } from '../services/api';
 import { ArrowLeft } from 'lucide-react';
 import Button from '../components/Button';
 
 export default function Login() {
   const navigate = useNavigate();
-  const dispatch = useAppDispatch();
+  const { login, isLoading, error, clearError } = useLogin();
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   
-  const { loading, error } = useAppSelector((state) => state.auth);
-
   const [showResetForm, setShowResetForm] = useState(false);
   const [resetEmail, setResetEmail] = useState('');
   const [resetLoading, setResetLoading] = useState(false);
@@ -22,14 +19,12 @@ export default function Login() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    dispatch(clearError());
+    clearError();
     
     try {
-      const resultAction = await dispatch(loginUser({ identifier, password }));
-      if (loginUser.fulfilled.match(resultAction)) {
-        console.log('Connexion réussie', resultAction.payload);
-        navigate('/dashboard');
-      }
+      await login(identifier, password);
+      console.log('Connexion réussie');
+      navigate('/dashboard');
     } catch (err: any) {
       console.error(err);
     }
@@ -141,9 +136,9 @@ export default function Login() {
                     {error && <p className="text-red-500 text-xs font-medium mb-3">{error}</p>}
                     <Button
                       type="submit"
-                      loading={loading}
+                      loading={isLoading}
                       fullWidth
-                      rightIcon={!loading && <LogIn className="h-4 w-4" />}
+                      rightIcon={!isLoading && <LogIn className="h-4 w-4" />}
                     >
                       Se connecter
                     </Button>

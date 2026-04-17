@@ -1,11 +1,18 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
+from sqlalchemy import text
 from app.utils.dependencies import get_db, get_current_user
 from app.models.taxe import Taxe
-from app.schemas.taxe import TaxeCreate, TaxeOut
+from app.schemas.taxe import TaxeCreate, TaxeOut, TaxeBase
 
 router = APIRouter(prefix="/taxes", tags=["taxes"])
+
+@router.get("/view", response_model=List[TaxeOut])
+def read_taxes_view(db: Session = Depends(get_db)):
+    result = db.execute(text("SELECT * FROM vue_taxes")).fetchall()
+    # Map raw SQL results to the schema
+    return [TaxeOut(id=row[0], nom=row[1], montant_base=row[2], frequence=row[3], description=row[4]) for row in result]
 
 @router.post("/", response_model=TaxeOut)
 def create_taxe(taxe: TaxeCreate, db: Session = Depends(get_db)):
