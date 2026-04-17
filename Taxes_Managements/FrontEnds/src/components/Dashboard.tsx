@@ -301,7 +301,12 @@ export default function Dashboard() {
              <div className="space-y-3">
                 <div className="bg-white p-4 justify-between items-center rounded-xl shadow-[0_2px_10px_rgb(0,0,0,0.03)] border border-slate-50 flex">
                    <div>
-                     <div className="text-sm font-extrabold text-slate-800 tracking-wide mb-0.5">Mamadou Konaté</div>
+                    <div 
+                      onClick={() => navigate('/vendeur-details')}
+                      className="text-sm font-extrabold text-slate-800 tracking-wide mb-0.5 cursor-pointer hover:text-[#0047a5] transition-colors"
+                    >
+                      Mamadou Konaté
+                    </div>
                      <div className="text-[0.65rem] text-slate-500 font-medium">Marché Central • Il y a 5 min</div>
                    </div>
                    <div className="text-right flex flex-col justify-end items-end">
