@@ -7,6 +7,7 @@ from app.models.paiement import Paiement
 from app.models.vendeur import Vendeur
 from app.models.taxe import Taxe
 from app.models.user import User
+from app.models.agent_stats import AgentCollecteStats
 from app.schemas.paiement import PaiementCreate, PaiementOut
 from pydantic import BaseModel
 from datetime import datetime
@@ -70,15 +71,7 @@ def get_collectes_by_agent(
     current_user: User = Depends(get_current_user)
 ):
     """Returns agents ordered by total amount collected (leaderboard)."""
-    rows = db.query(
-        User.id.label("agent_id"),
-        User.full_name.label("agent_name"),
-        func.sum(Paiement.montant).label("total_collected"),
-        func.count(Paiement.id).label("nb_collectes")
-    ).join(Paiement, Paiement.collection_user_id == User.id)\
-     .group_by(User.id, User.full_name)\
-     .order_by(desc(func.sum(Paiement.montant)))\
-     .all()
+    rows = db.query(AgentCollecteStats).order_by(desc(AgentCollecteStats.total_collected)).all()
 
     return [
         AgentCollecteSummary(

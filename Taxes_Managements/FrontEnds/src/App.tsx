@@ -11,6 +11,7 @@ import Signalements from './pages/Signalements';
 import { taxeApi } from './services/taxe_api';
 
 import ProtectedRoute from './ui/ProtectedRoute';
+import ErrorBoundary from './ui/ErrorBoundary';
 import { statsApi } from './services/stats_api';
 import { setDashboardData, setLoading, setError } from './store/slices/dashboardSlice';
 import { paiementApi } from './services/paiement_api';
@@ -58,21 +59,26 @@ const router = createBrowserRouter([
   {
     path: '/',
     element: <Navigate to="/dashboard" replace />,
+    errorElement: <ErrorBoundary />,
   },
   {
     path: '/login',
     element: <Login />,
+    errorElement: <ErrorBoundary />,
   },
   {
     path: '/onboarding',
     element: <Onboarding />,
+    errorElement: <ErrorBoundary />,
   },
   {
     path: '/reset-password',
     element: <ResetPassword />,
+    errorElement: <ErrorBoundary />,
   },
   {
     element: <AppLayout />,
+    errorElement: <ErrorBoundary />,
     children: [
       {
         element: <ProtectedRoute requireAdmin />,
@@ -90,22 +96,19 @@ const router = createBrowserRouter([
         ],
       },
       {
-        element: <ProtectedRoute allowedRoles={['Agent de Collecte']} />,
+        element: <ProtectedRoute allowedRoles={['Agent de Collecte', 'Autorité Locale']} />,
         children: [
           {
             path: 'collecte',
             element: <Collecte />,
-            loader: collecteLoader,
-          },
-        ],
-      },
-      {
-        element: <ProtectedRoute allowedRoles={['Autorité Locale']} />,
-        children: [
-          {
-            path: 'collecte',
-            element: <Collecte />,
-            loader: collecteAdminLoader,
+            loader: async () => {
+              const state = store.getState();
+              const role = state.auth.user?.role;
+              if (role === 'Autorité Locale') {
+                return collecteAdminLoader();
+              }
+              return collecteLoader();
+            },
           },
         ],
       },

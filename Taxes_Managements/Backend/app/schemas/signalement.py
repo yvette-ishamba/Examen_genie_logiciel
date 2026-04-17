@@ -9,6 +9,9 @@ class SignalementBase(BaseModel):
 class SignalementCreate(SignalementBase):
     pass
 
+class SignalementUpdate(BaseModel):
+    statut: str
+
 class SignalementOut(SignalementBase):
     id: int
     user_id: int

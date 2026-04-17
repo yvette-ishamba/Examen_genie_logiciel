@@ -86,3 +86,21 @@ export const usersApi = {
     return request('/users/me');
   }
 };
+
+export const signalementsApi = {
+  getAll: async () => {
+    return request('/signalements/');
+  },
+  create: async (payload: { sujet: string; description: string }) => {
+    return request('/signalements/', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  },
+  updateStatus: async (id: number, statut: string) => {
+    return request(`/signalements/${id}/statut`, {
+      method: 'PATCH',
+      body: JSON.stringify({ statut }),
+    });
+  }
+};

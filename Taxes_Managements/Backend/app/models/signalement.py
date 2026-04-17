@@ -11,6 +11,6 @@ class Signalement(Base):
     sujet = Column(String(255), index=True)
     description = Column(Text)
     date_signalement = Column(DateTime, default=datetime.utcnow)
-    statut = Column(String(255), default="Ouvert") # Ouvert, En cours, Résolu
+    statut = Column(String(255), default="en attente") # en attente, confirme, rejete
     
     auteur = relationship("User")
