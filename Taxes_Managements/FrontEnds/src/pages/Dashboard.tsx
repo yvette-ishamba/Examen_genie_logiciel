@@ -140,35 +140,37 @@ export default function Dashboard() {
       
       {/* Main Performance Card */}
       <section className='grid grid-cols-1 md:grid-cols-3 gap-5'>
-        <div className="stats-gradient p-6 rounded-2xl text-white shadow-xl ">
+        <div className="stats-gradient p-6 rounded-2xl text-white shadow-xl md:col-span-1 lg:col-span-1">
           <div className="flex justify-between items-start mb-2">
-            <p className="text-white/80 font-semibold text-xs uppercase tracking-widest">Total collecté aujourd'hui</p>
+            <p className="text-white/80 font-semibold text-xs uppercase tracking-widest">Total aujourd'hui</p>
             <span className="material-symbols-outlined text-white/50 animate-pulse">trending_up</span>
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="text-[2.25rem] font-black leading-tight tracking-tight">
+            <span className="text-[1.75rem] lg:text-[2.25rem] font-black leading-tight tracking-tight">
               {summary?.total_today.toLocaleString('fr-FR') || '0'}
             </span>
-            <span className="text-xl font-bold opacity-80">FCFA</span>
+            <span className="text-lg font-bold opacity-80">FCFA</span>
           </div>
           <div className="mt-4 flex items-center gap-2 bg-white/10 w-fit px-3 py-1.5 rounded-full backdrop-blur-sm border border-white/5">
             <span className="text-[10px] font-bold">
               {summary && summary.growth_rate >= 0 ? '+' : ''}
-              {summary?.growth_rate.toFixed(1)}% par rapport à hier
+              {summary?.growth_rate.toFixed(1)}%
             </span>
           </div>
         </div>
 
         {/* Real-time Status Grid */}
-        <div className="bg-surface-container-lowest p-5 rounded-2xl border border-outline-variant/10 shadow-sm hover:shadow-md transition-shadow">
-          <span className="material-symbols-outlined text-primary mb-2 text-2xl">groups</span>
-          <p className="text-on-surface-variant text-[10px] font-bold uppercase mb-1 tracking-wider">Vendeurs actifs</p>
-          <p className="text-2xl font-black text-primary">{summary?.active_vendeurs || 0}</p>
-        </div>
-        <div className="bg-surface-container-lowest p-5 rounded-2xl border border-outline-variant/10 shadow-sm hover:shadow-md transition-shadow">
-          <span className="material-symbols-outlined text-secondary mb-2 text-2xl">engineering</span>
-          <p className="text-on-surface-variant text-[10px] font-bold uppercase mb-1 tracking-wider">Agents terrain</p>
-          <p className="text-2xl font-black text-secondary">{summary?.active_agents || 0}</p>
+        <div className="grid grid-cols-2 md:grid-cols-1 md:col-span-2 lg:col-span-2 gap-5">
+          <div className="bg-surface-container-lowest p-5 rounded-2xl border border-outline-variant/10 shadow-sm hover:shadow-md transition-shadow">
+            <span className="material-symbols-outlined text-primary mb-2 text-2xl">groups</span>
+            <p className="text-on-surface-variant text-[10px] font-bold uppercase mb-1 tracking-wider">Vendeurs</p>
+            <p className="text-2xl font-black text-primary">{summary?.active_vendeurs || 0}</p>
+          </div>
+          <div className="bg-surface-container-lowest p-5 rounded-2xl border border-outline-variant/10 shadow-sm hover:shadow-md transition-shadow">
+            <span className="material-symbols-outlined text-secondary mb-2 text-2xl">engineering</span>
+            <p className="text-on-surface-variant text-[10px] font-bold uppercase mb-1 tracking-wider">Agents</p>
+            <p className="text-2xl font-black text-secondary">{summary?.active_agents || 0}</p>
+          </div>
         </div>
       </section>
       

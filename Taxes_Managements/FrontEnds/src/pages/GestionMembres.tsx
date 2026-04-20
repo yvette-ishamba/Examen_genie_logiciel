@@ -135,20 +135,20 @@ export default function GestionMembres() {
       </div>
 
       {/* Filters & Search */}
-      <div className="flex flex-col md:flex-row gap-4 bg-white p-4 rounded-xl shadow-sm border border-slate-100">
+      <div className="flex flex-col sm:flex-row gap-4 bg-white p-4 rounded-xl shadow-sm border border-slate-100">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
           <input 
             type="text" 
             placeholder="Rechercher par nom ou email..."
-            className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+            className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
         <div className="flex gap-2">
           <select 
-            className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none"
+            className="flex-1 sm:flex-none px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none min-w-[140px]"
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
           >
@@ -258,16 +258,17 @@ export default function GestionMembres() {
         </div>
         
         {/* Pagination Controls */}
-        <div className="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
-          <p className="text-sm text-slate-500">
+        <div className="px-4 sm:px-6 py-4 bg-slate-50 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p className="text-sm text-slate-500 order-2 sm:order-1">
             Page <span className="font-medium text-slate-700">{currentPage + 1}</span>
           </p>
-          <div className="flex gap-2">
+          <div className="flex gap-2 w-full sm:w-auto order-1 sm:order-2">
             <Button 
               variant="secondary" 
               size="sm" 
               onClick={() => setCurrentPage(prev => Math.max(0, prev - 1))}
               disabled={currentPage === 0 || loading}
+              className="flex-1 sm:flex-none"
             >
               Précédent
             </Button>
@@ -276,6 +277,7 @@ export default function GestionMembres() {
               size="sm" 
               onClick={() => setCurrentPage(prev => prev + 1)}
               disabled={!hasMore || loading}
+              className="flex-1 sm:flex-none"
             >
               Suivant
             </Button>

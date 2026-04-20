@@ -11,9 +11,9 @@ export default function ValidationPending() {
   const { user } = useAppSelector((state) => state.auth);
 
   useEffect(() => {
-    // If user is already validated, redirect to login
+    // If user is already validated, redirect to dashboard
     if (user?.status === 'valide') {
-      navigate('/login');
+      navigate('/dashboard');
     }
   }, [user, navigate]);
 
@@ -27,8 +27,8 @@ export default function ValidationPending() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6">
-      <div className="max-w-md w-full bg-white rounded-3xl shadow-xl p-8 text-center space-y-8 animate-in fade-in zoom-in duration-500">
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 sm:p-6 md:p-8">
+      <div className="w-full max-w-md bg-white rounded-2xl sm:rounded-3xl shadow-xl p-6 sm:p-8 md:p-10 text-center space-y-6 sm:space-y-8 animate-in fade-in zoom-in duration-500">
         <div className="flex justify-center">
           <div className="relative">
             <div className={`w-24 h-24 ${user?.status === 'rejete' ? 'bg-red-50' : 'bg-blue-50'} rounded-full flex items-center justify-center ${user?.status !== 'rejete' ? 'animate-pulse' : ''}`}>

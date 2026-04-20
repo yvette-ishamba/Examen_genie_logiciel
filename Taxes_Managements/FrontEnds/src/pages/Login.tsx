@@ -54,24 +54,24 @@ export default function Login() {
     }
   };
   return (
-    <div className="min-h-screen bg-[#f9fafb] font-inter flex flex-col relative pb-20">
-      <div className="flex-1 flex flex-col items-center pt-16 px-4">
-        <div className="flex flex-col items-center mb-10">
+    <div className="min-h-screen bg-slate-50 font-inter flex flex-col relative pb-10 sm:pb-20">
+      <div className="flex-1 flex flex-col items-center justify-center py-10 px-4 sm:px-6">
+        <div className="flex flex-col items-center mb-8 sm:mb-10">
           <div className="bg-white p-3 rounded-2xl shadow-sm mb-4 border border-gray-100">
             <Landmark className="w-10 h-10 text-[#0047a5]" strokeWidth={2} />
           </div>
-          <h1 className="text-2xl font-bold text-[#0047a5] tracking-wide">
-            GESTION DES TAXES
+          <h1 className="text-xl sm:text-2xl font-bold text-[#0047a5] tracking-wide text-center uppercase">
+            Gestion des Taxes
           </h1>
-          <p className="text-[0.7rem] text-slate-500 font-medium tracking-[0.15em] uppercase mt-1">
-            TAXE APP
+          <p className="text-[0.6rem] sm:text-[0.7rem] text-slate-500 font-medium tracking-[0.15em] uppercase mt-1">
+            Système Intégré de Collecte
           </p>
         </div>
 
-          <div className="w-full max-w-[400px] sm:max-w-md md:max-w-lg xl:max-w-xl 2xl:max-w-2xl 3xl:max-w-3xl bg-white rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-black/5 overflow-hidden transition-all duration-300">
+        <div className="w-full max-w-[400px] bg-white rounded-2xl shadow-xl ring-1 ring-black/5 overflow-hidden transition-all duration-300">
           <div className="h-1.5 w-full bg-[#0047a5]"></div>
           
-          <div className="p-8 sm:p-10 md:p-12 xl:p-14 2xl:p-16 3xl:p-20">
+          <div className="p-6 sm:p-8 md:p-10">
             {!showResetForm ? (
               <>
                 <h2 className="text-xl md:text-2xl xl:text-3xl font-bold text-slate-800 mb-1">

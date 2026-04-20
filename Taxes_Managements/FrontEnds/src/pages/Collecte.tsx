@@ -117,8 +117,8 @@ function CollecteAdminView() {
           </span>
         </div>
 
-        <div className="overflow-hidden rounded-3xl border border-outline-variant/10 shadow-sm bg-surface-container-lowest">
-          <table className="w-full text-left border-collapse">
+        <div className="overflow-x-auto rounded-3xl border border-outline-variant/10 shadow-sm bg-surface-container-lowest">
+          <table className="w-full text-left border-collapse min-w-[600px]">
             <thead className="bg-surface-container text-[10px] font-black text-on-surface-variant/60 uppercase tracking-widest">
               <tr>
                 <th className="px-5 py-3">Vendeur</th>
@@ -303,7 +303,7 @@ function CollecteAgentView() {
             Page {currentPage + 1}
           </span>
         </div>
-        <div className="overflow-hidden rounded-3xl border border-outline-variant/10 shadow-sm bg-surface-container-lowest">
+        <div className="overflow-x-auto rounded-3xl border border-outline-variant/10 shadow-sm bg-surface-container-lowest">
           <table className="w-full text-left border-collapse">
             <thead className="bg-surface-container text-[10px] font-black text-on-surface-variant/60 uppercase tracking-widest">
               <tr>
@@ -354,7 +354,7 @@ function CollecteAgentView() {
       {/* Tax Type Selection */}
       <section className="space-y-4 w-[80%] px-1">
         <h3 className="text-[11px] font-black text-on-surface-variant uppercase tracking-[0.2em]">Type de Collecte</h3>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {taxes.map(taxe => (
             <div
               key={taxe.id}
