@@ -23,6 +23,11 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRoles, requireAd
     return <Navigate to="/login" replace />;
   }
 
+  // If account is pending validation or rejected, force redirect to pending page
+  if (user?.status === 'en attente' || user?.status === 'rejete') {
+    return <Navigate to="/validation-pending" replace />;
+  }
+
   // Pure role-based logic: "Autorité Locale" acts as the superuser
   if (user?.role === 'Autorité Locale') {
     return <Outlet />;

@@ -1,6 +1,7 @@
 from pydantic import BaseModel, EmailStr
 from datetime import datetime
 from typing import Optional
+from app.schemas.vendeur import VendeurOut
 
 class UserBase(BaseModel):
     email: EmailStr
@@ -9,6 +10,7 @@ class UserBase(BaseModel):
     phone_number: Optional[str] = None
     is_active: Optional[bool] = True
     is_admin: Optional[bool] = False
+    status: Optional[str] = "en attente"
 
 class UserRegister(BaseModel):
     email: EmailStr
@@ -25,6 +27,7 @@ class UserCreate(UserBase):
 class UserOut(UserBase):
     id: int
     created_at: datetime
+    vendeur: Optional[VendeurOut] = None
 
     class Config:
         from_attributes = True

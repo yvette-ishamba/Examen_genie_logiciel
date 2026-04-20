@@ -62,7 +62,7 @@ export default function Onboarding() {
     try {
       const resultAction = await dispatch(submitOnboardingProfile());
       if (submitOnboardingProfile.fulfilled.match(resultAction)) {
-        navigate('/login'); 
+        navigate('/validation-pending'); 
       }
     } catch (err) {
       console.error(err);
@@ -70,9 +70,9 @@ export default function Onboarding() {
   };
 
   return (
-    <div className='p-5'>
+    <div className='p-0 sm:p-5 min-h-screen bg-slate-100/50 flex items-center justify-center'>
       
-      <div className="w-[70%] mx-auto bg-[#f9fafb] font-inter shadow-[0_-4px_20px_rgb(0,0,0,0.5)] rounded-2xl">
+      <div className="w-full sm:max-w-xl md:max-w-3xl lg:max-w-4xl xl:max-w-5xl mx-auto bg-[#f9fafb] font-inter shadow-2xl sm:rounded-2xl overflow-hidden">
 
       {/* Stepper */}
       <div className="px-6 py-6 max-w-md sm:max-w-lg md:max-w-xl xl:max-w-3xl 2xl:max-w-4xl 3xl:max-w-5xl mx-auto transition-all duration-300">
@@ -101,7 +101,7 @@ export default function Onboarding() {
         </div>
       </div>
 
-      <main className="max-w-md sm:max-w-lg md:max-w-xl xl:max-w-3xl 2xl:max-w-4xl 3xl:max-w-5xl mx-auto px-4 space-y-8 transition-all duration-300 min-h-[400px]">
+      <main className="w-full px-4 sm:px-6 md:px-8 space-y-6 sm:space-y-8 transition-all duration-300 min-h-[300px] sm:min-h-[400px]">
         
         {/* Step 1: Role Selection */}
         {currentStep === 1 && (
@@ -274,12 +274,12 @@ export default function Onboarding() {
             </p>
           )}
           
-          <div className="flex gap-4 w-full md:w-[60%] justify-center">
+          <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto px-4 sm:px-0">
             {currentStep > 1 && (
               <Button 
                 variant="secondary"
                 onClick={handlePrevStep}
-                className="flex-1 max-w-[200px]"
+                className="w-full sm:w-[120px]"
               >
                 Retour
               </Button>
@@ -288,7 +288,7 @@ export default function Onboarding() {
             {currentStep < 3 ? (
               <Button 
                 onClick={handleNextStep}
-                className="flex-1 max-w-[200px]"
+                className="w-full sm:w-[160px]"
                 rightIcon={<ArrowRight className="h-4 w-4" />}
               >
                 Suivant
@@ -297,7 +297,7 @@ export default function Onboarding() {
               <Button 
                 onClick={handleSubmit}
                 loading={submitting}
-                className="flex-1 max-w-[200px]"
+                className="w-full sm:w-[240px]"
                 rightIcon={!submitting && <ArrowRight className="h-4 w-4" />}
               >
                 Confirmer et S'inscrire

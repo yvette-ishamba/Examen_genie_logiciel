@@ -8,6 +8,8 @@ import Collecte from './pages/Collecte';
 import Vendeurs from './pages/Vendeurs';
 import Taxes from './pages/Taxes';
 import Signalements from './pages/Signalements';
+import ValidationPending from './pages/ValidationPending';
+import GestionMembres from './pages/GestionMembres';
 import { taxeApi } from './services/taxe_api';
 
 import ProtectedRoute from './ui/ProtectedRoute';
@@ -58,7 +60,7 @@ const dashboardLoader = async () => {
 const router = createBrowserRouter([
   {
     path: '/',
-    element: <Navigate to="/dashboard" replace />,
+    element: <Navigate to="/login" replace />,
     errorElement: <ErrorBoundary />,
   },
   {
@@ -77,6 +79,11 @@ const router = createBrowserRouter([
     errorElement: <ErrorBoundary />,
   },
   {
+    path: '/validation-pending',
+    element: <ValidationPending />,
+    errorElement: <ErrorBoundary />,
+  },
+  {
     element: <AppLayout />,
     errorElement: <ErrorBoundary />,
     children: [
@@ -92,6 +99,10 @@ const router = createBrowserRouter([
             path: 'taxes',
             element: <Taxes />,
             loader: taxesLoader,
+          },
+          {
+            path: 'membres',
+            element: <GestionMembres />,
           },
         ],
       },

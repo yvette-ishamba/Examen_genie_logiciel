@@ -1,10 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, Body
+from sqlalchemy import text
 from sqlalchemy.orm import Session
 from typing import List
 from app.utils.dependencies import get_db, get_current_user
 from app.models.user import User
 from app.models.vendeur import Vendeur
-from app.schemas.user import UserOut, UserCreate, UserRegister
+from app.schemas.user import UserOut, UserCreate, UserRegister, UserBase
 from app.utils.security import get_password_hash, create_access_token, SECRET_KEY, ALGORITHM
 from jose import JWTError, jwt
 from datetime import timedelta
@@ -128,6 +129,49 @@ def reset_password_with_token(
     return {"message": "Mot de passe mis à jour avec succès"}
 
 @router.get("/", response_model=List[UserOut])
-def read_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+def read_users(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
     users = db.query(User).offset(skip).limit(limit).all()
     return users
+
+@router.patch("/{user_id}/validate", response_model=UserOut)
+def validate_user(user_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    if current_user.role != 'Autorité Locale':
+        raise HTTPException(status_code=403, detail="Permission refusée")
+    
+    db_user = db.query(User).filter(User.id == user_id).first()
+    if not db_user:
+        raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
+    
+    db_user.status = "valide"
+    db.commit()
+    db.refresh(db_user)
+    return db_user
+
+@router.patch("/{user_id}/reject", response_model=UserOut)
+def reject_user(user_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    if current_user.role != 'Autorité Locale':
+        raise HTTPException(status_code=403, detail="Permission refusée")
+    
+    db_user = db.query(User).filter(User.id == user_id).first()
+    if not db_user:
+        raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
+    
+    db_user.status = "rejete"
+    db.commit()
+    db.refresh(db_user)
+    return db_user
+
+@router.put("/{user_id}", response_model=UserOut)
+def update_user(user_id: int, payload: UserBase, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    if current_user.role != 'Autorité Locale' and current_user.id != user_id:
+        raise HTTPException(status_code=403, detail="Permission refusée")
+    
+    # Call stored procedure
+    db.execute(
+        text("CALL sp_UpdateUser(:id, :name, :phone, :role)"),
+        {"id": user_id, "name": payload.full_name, "phone": payload.phone_number, "role": payload.role}
+    )
+    db.commit()
+    
+    db_user = db.query(User).filter(User.id == user_id).first()
+    return db_user
