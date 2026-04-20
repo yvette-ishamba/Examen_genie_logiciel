@@ -6,6 +6,11 @@ export interface User {
   email: string;
   full_name: string;
   role: string | null;
+  status: string;
+  phone_number: string;
+  vendeur?: {
+    identifiant_national: string;
+  } | null;
 }
 
 interface AuthState {

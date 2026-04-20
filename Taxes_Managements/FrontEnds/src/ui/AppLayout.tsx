@@ -70,6 +70,7 @@ export default function AppLayout() {
             <NavItem to="/dashboard" icon="dashboard" label="Tableau" />
             <NavItem to="/collecte" icon="payments" label="Collecte" />
             <NavItem to="/vendeurs" icon="groups" label="Vendeurs" />
+            <NavItem to="/membres" icon="person_search" label="Membres" />
             <NavItem to="/taxes" icon="settings_suggest" label="Taxes" />
             <NavItem to="/signalements" icon="report_problem" label="Signalements" />
           </>

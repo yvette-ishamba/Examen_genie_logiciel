@@ -84,6 +84,25 @@ export const usersApi = {
   },
   getMe: async () => {
     return request('/users/me');
+  },
+  getAll: async (skip = 0, limit = 10) => {
+    return request(`/users/?skip=${skip}&limit=${limit}`);
+  },
+  validate: async (userId: number) => {
+    return request(`/users/${userId}/validate`, {
+      method: 'PATCH',
+    });
+  },
+  reject: async (userId: number) => {
+    return request(`/users/${userId}/reject`, {
+      method: 'PATCH',
+    });
+  },
+  update: async (userId: number, payload: any) => {
+    return request(`/users/${userId}`, {
+      method: 'PUT',
+      body: JSON.stringify(payload),
+    });
   }
 };
 

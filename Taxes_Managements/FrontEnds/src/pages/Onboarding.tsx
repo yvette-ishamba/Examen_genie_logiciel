@@ -62,7 +62,7 @@ export default function Onboarding() {
     try {
       const resultAction = await dispatch(submitOnboardingProfile());
       if (submitOnboardingProfile.fulfilled.match(resultAction)) {
-        navigate('/login'); 
+        navigate('/validation-pending'); 
       }
     } catch (err) {
       console.error(err);
