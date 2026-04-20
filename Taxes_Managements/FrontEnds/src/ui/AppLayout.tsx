@@ -1,5 +1,6 @@
 import { NavLink, Outlet, Navigate } from 'react-router-dom';
 import { useLogin } from './loginContext';
+import Button from '../components/Button';
 
 export default function AppLayout() {
   const { user, logout, isAuthenticated, isLoading } = useLogin();
@@ -21,9 +22,9 @@ export default function AppLayout() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col md:flex-row bg-surface">
-      {/* Sidebar for Desktop */}
-      <aside className="hidden md:flex flex-col w-64 bg-white border-r border-stone-200 sticky top-0 h-screen z-50">
+    <div className="min-h-screen flex flex-col lg:flex-row bg-surface">
+      {/* Sidebar for Desktop - Now only for lg+ */}
+      <aside className="hidden lg:flex flex-col w-64 bg-white border-r border-stone-200 sticky top-0 h-screen z-50">
         <div className="p-6 border-b border-stone-100 flex items-center gap-3">
           <span className="material-symbols-outlined text-primary text-2xl">account_balance</span>
           <h1 className="font-['Public_Sans'] font-black text-lg text-primary tracking-tight">
@@ -36,52 +37,64 @@ export default function AppLayout() {
         </nav>
 
         <div className="p-4 border-t border-stone-100">
-          <div className="flex items-center gap-3 p-3 bg-surface rounded-xl border border-stone-100">
-            <div className="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center overflow-hidden border border-primary/10">
+          <Button 
+            variant="danger" 
+            fullWidth 
+            onClick={handleLogout}
+            leftIcon={<span className="material-symbols-outlined text-lg">logout</span>}
+          >
+            Déconnexion
+          </Button>
+        </div>
+      </aside>
+
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Top Header - Now for all breakpoints (Mobile/Tablet/Desktop) */}
+        <header className="bg-white border-b border-stone-100 sticky top-0 z-40 h-[73px] flex items-center justify-between px-6 lg:px-8 shadow-sm">
+          {/* Logo - Mobile/Tablet Only */}
+          <div className="flex lg:hidden items-center gap-3">
+            <span className="material-symbols-outlined text-primary text-2xl">account_balance</span>
+            <h1 className="font-['Public_Sans'] font-black text-xl text-primary tracking-tight">
+              Autorité
+            </h1>
+          </div>
+
+          <div className="flex items-center gap-4 ml-auto">
+            <div className="text-right">
+              <p className="text-[11px] lg:text-sm font-black text-on-surface truncate max-w-[100px] lg:max-w-none">{user?.full_name}</p>
+              <p className="text-[9px] lg:text-[10px] font-bold text-primary uppercase tracking-widest">{user?.role}</p>
+            </div>
+            <div className="w-9 h-9 lg:w-10 lg:h-10 rounded-full bg-surface-container-high flex items-center justify-center overflow-hidden border border-primary/10 shadow-sm">
               <img 
                 src="https://lh3.googleusercontent.com/aida-public/AB6AXuDr7illqNsP7B3YZWHzcOUCXQYCZ3S3iwBYwiI8-apqLpSFyAMYTd3eGpmTeboEDwUcniUXZCtnU7WE8VDCEsi0j_rWHqXo8Cr1_KarztUShUikfzQva1u8NhbQ3iJJpdRdULaTg1oAyfZZ7n2cbajAc2H-IRdlRH7k4DMBDxwU_d1VVgC3U3X0fIp88BtjRa2ik440tlweS_N4U_fJNA3lA0urwJFBIdWyi-4no62S0OARO4rzscKcoH706IASO7mT8Jfc0EsEymc" 
                 alt="Profil" 
                 className="w-full h-full object-cover"
               />
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-black text-on-surface truncate">{user?.full_name}</p>
-              <p className="text-[10px] font-bold text-primary uppercase tracking-widest">{user?.role}</p>
+            
+            {/* Logout button next to profile for mobile/tablet */}
+            <div className="lg:hidden">
+              <Button 
+                variant="danger"
+                size="sm"
+                onClick={handleLogout}
+                className="!p-2 min-w-0 h-9 w-9 rounded-full shadow-sm"
+              >
+                <span className="material-symbols-outlined text-lg">logout</span>
+              </Button>
             </div>
-            <button onClick={handleLogout} className="text-stone-400 hover:text-error transition-colors">
-              <span className="material-symbols-outlined">logout</span>
-            </button>
           </div>
-        </div>
-      </aside>
-
-      <div className="flex-1 flex flex-col min-w-0">
-        {/* TopAppBar - Mobile Only */}
-        <header className="md:hidden bg-white sticky top-0 z-50 flex justify-between items-center px-6 py-4 w-full shadow-sm">
-          <div className="flex items-center gap-3">
-            <span className="material-symbols-outlined text-primary text-2xl">account_balance</span>
-            <h1 className="font-['Public_Sans'] font-black text-xl text-primary tracking-tight">
-              Autorité
-            </h1>
-          </div>
-          
-          <button 
-            onClick={handleLogout}
-            className="flex items-center justify-center p-2 rounded-xl text-error bg-error/5 border border-error/10"
-          >
-            <span className="material-symbols-outlined text-xl">logout</span>
-          </button>
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 pb-24 md:pb-0 overflow-y-auto">
-          <div className="max-w-7xl mx-auto">
+        <main className="flex-1 pb-24 lg:pb-0 overflow-y-auto">
+          <div className="max-w-7xl mx-auto p-4 lg:p-8">
             <Outlet />
           </div>
         </main>
 
-        {/* BottomNavBar - Mobile Only */}
-        <nav className="md:hidden fixed bottom-0 left-0 w-full flex justify-around items-center px-2 pb-6 pt-2 bg-white/85 backdrop-blur-xl z-50 rounded-t-xl shadow-[0_-8px_24px_rgba(27,28,28,0.06)] border-t border-stone-200/20 overflow-x-auto">
+        {/* BottomNavBar - Mobile/Tablet Only */}
+        <nav className="lg:hidden fixed bottom-0 left-0 w-full flex justify-around items-center px-2 pb-6 pt-2 bg-white/85 backdrop-blur-xl z-50 rounded-t-xl shadow-[0_-8px_24px_rgba(27,28,28,0.06)] border-t border-stone-200/20">
           <MobileNav user={user} />
         </nav>
       </div>

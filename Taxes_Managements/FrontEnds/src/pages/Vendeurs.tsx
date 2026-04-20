@@ -89,9 +89,6 @@ export default function Vendeurs() {
 
 // --- Vendeur Detail View (Mockup Implementation) ---
 function VendeurDetailView({ data }: { data: VendeurMe }) {
-  const handleDownloadGlobal = () => {
-    alert("Génération du reçu global PDF...");
-  };
 
   const handleDownloadItem = (id: number) => {
     alert(`Téléchargement du reçu pour le paiement #${id}`);
@@ -208,16 +205,6 @@ function VendeurDetailView({ data }: { data: VendeurMe }) {
         </div>
       </div>
 
-      {/* Floating Action Button */}
-      <div className="fixed bottom-6 left-5 right-5 max-w-2xl mx-auto z-20">
-        <button 
-          onClick={handleDownloadGlobal}
-          className="w-full bg-primary hover:bg-primary-container text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-3 shadow-[0_8px_30px_rgb(0,63,135,0.4)] transition-all active:scale-[0.98]"
-        >
-          <FileText className="h-5 w-5" />
-          <span>GÉNÉRER UN REÇU GLOBAL PDF</span>
-        </button>
-      </div>
 
       {/* Optional Branding Footer like in mockup */}
       <p className="text-center text-[9px] uppercase tracking-[0.2em] font-medium text-on-surface-variant/60 pb-8 px-4">
