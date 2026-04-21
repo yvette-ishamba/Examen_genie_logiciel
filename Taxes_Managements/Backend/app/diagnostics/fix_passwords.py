@@ -1,3 +1,6 @@
+import sys, os
+_backend = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+if _backend not in sys.path: sys.path.insert(0, _backend)
 import sqlite3
 import bcrypt
 
@@ -24,3 +27,4 @@ else:
     print("All passwords are valid.")
     
 conn.close()
+

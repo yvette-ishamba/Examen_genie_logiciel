@@ -50,8 +50,12 @@ def create_paiement(
     if db_paiement:
         raise HTTPException(status_code=400, detail="Paiement reference already exists")
     
+    paiement_data = paiement.dict()
+    if not paiement_data.get('date_paiement'):
+        paiement_data.pop('date_paiement', None) # Let the DB handle default if null
+    
     new_paiement = Paiement(
-        **paiement.dict(),
+        **paiement_data,
         collection_user_id=current_user.id
     )
     db.add(new_paiement)

@@ -6,6 +6,7 @@ export interface VendeurViewOut {
   telephone: string;
   id_nat: string;
   marche: string;
+  derniere_collecte: string | null;
 }
 
 export interface PaymentHistoryItem {
@@ -36,12 +37,13 @@ export interface VendeurStatusOut extends VendeurViewOut {
 }
 
 export const vendeurApi = {
-  getListView: async (q: string = '', skip: number = 0, limit: number = 10): Promise<VendeurViewOut[]> => {
+  getListView: async (q: string = '', skip: number = 0, limit: number = 10, taxId?: number): Promise<VendeurViewOut[]> => {
     const params = new URLSearchParams({
       q,
       skip: skip.toString(),
       limit: limit.toString(),
     });
+    if (taxId) params.append('tax_id', taxId.toString());
     return request(`/vendeurs/view?${params}`);
   },
 

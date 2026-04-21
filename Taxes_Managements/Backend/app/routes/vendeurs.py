@@ -9,22 +9,69 @@ from app.models.paiement import Paiement
 from app.models.taxe import Taxe
 from app.schemas.vendeur import VendeurCreate, VendeurOut, VendeurViewOut, VendeurMe, PaymentHistoryItem, VendeurStatusOut
 from datetime import datetime, timedelta
+import logging
 
 router = APIRouter(prefix="/vendeurs", tags=["vendeurs"])
 
+logger = logging.getLogger(__name__)
+
 @router.get("/view", response_model=List[VendeurViewOut])
-def read_vendeurs_view(q: str = "", skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
-    # Query the view with search and pagination
-    sql = "SELECT * FROM list_vendeurs"
-    params = {}
-    if q:
-        sql += " WHERE noms LIKE :q OR id_nat LIKE :q"
-        params["q"] = f"%{q}%"
+def read_vendeurs_view(q: str = "", tax_id: Optional[int] = None, skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
+    # Query the view with search and pagination, joining with paiements for last date of specific tax
+    params = {"skip": skip, "limit": limit}
     
-    sql += f" LIMIT {limit} OFFSET {skip}"
+    # Base SQL
+    sql = """
+        SELECT 
+            lv.id, 
+            lv.noms, 
+            lv.telephone, 
+            lv.id_nat, 
+            lv.marche, 
+            MAX(p.date_paiement) as derniere_collecte
+        FROM list_vendeurs lv
+    """
+    
+    # Conditional LEFT JOIN
+    if tax_id:
+        sql += " LEFT JOIN paiements p ON lv.id = p.vendeur_id AND p.taxe_id = :tax_id "
+        params["tax_id"] = tax_id
+    else:
+        sql += " LEFT JOIN paiements p ON lv.id = p.vendeur_id "
+        
+    # Search filter
+    if q:
+        sql += " WHERE (lv.noms LIKE :q OR lv.id_nat LIKE :q) "
+        params["q"] = f"%{q}%"
+        
+    # Grouping and Pagination
+    sql += """
+        GROUP BY lv.id, lv.noms, lv.telephone, lv.id_nat, lv.marche
+        ORDER BY lv.noms ASC
+        LIMIT :limit OFFSET :skip
+    """
+    
+    # Debug logging
+    logger.error(f"DEBUG: Running query for tax_id={tax_id}, q='{q}'")
     
     result = db.execute(text(sql), params).fetchall()
-    return [VendeurViewOut(id=row[0], noms=row[1], telephone=row[2], id_nat=row[3], marche=row[4]) for row in result]
+    
+    # Debug logging
+    if result:
+        logger.error(f"DEBUG: Found {len(result)} vendors. First vendor last date: {result[0][5]}")
+    else:
+        logger.error("DEBUG: No vendors found.")
+    
+    return [
+        VendeurViewOut(
+            id=row[0], 
+            noms=row[1], 
+            telephone=row[2], 
+            id_nat=row[3], 
+            marche=row[4],
+            derniere_collecte=row[5]
+        ) for row in result
+    ]
 
 @router.post("/", response_model=VendeurOut)
 def create_vendeur(vendeur: VendeurCreate, db: Session = Depends(get_db)):

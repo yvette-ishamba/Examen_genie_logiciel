@@ -9,12 +9,13 @@ class PaiementBase(BaseModel):
     reference: str
 
 class PaiementCreate(PaiementBase):
-    pass
+    date_paiement: Optional[datetime] = None
 
 class PaiementOut(PaiementBase):
     id: int
     collection_user_id: int
     date_paiement: datetime
+    created_at: datetime
 
     class Config:
         from_attributes = True

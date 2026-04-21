@@ -5,6 +5,7 @@ export interface PaiementCreate {
   taxe_id: number;
   montant: number;
   reference: string;
+  date_paiement?: string;
 }
 
 export interface AgentCollecteSummary {

@@ -26,6 +26,7 @@ class VendeurViewOut(BaseModel):
     telephone: str
     id_nat: str
     marche: str
+    derniere_collecte: Optional[datetime] = None
 
     class Config:
         from_attributes = True

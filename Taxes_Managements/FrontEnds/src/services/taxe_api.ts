@@ -6,6 +6,7 @@ export interface TaxeOut {
   montant_base: number;
   frequence: string;
   description?: string | null;
+  prix_libre: boolean;
 }
 
 export interface TaxeCreate {
@@ -13,6 +14,7 @@ export interface TaxeCreate {
   montant_base: number;
   frequence: string;
   description?: string;
+  prix_libre: boolean;
 }
 
 export interface TaxeBase {
@@ -20,6 +22,7 @@ export interface TaxeBase {
   montant_base: number;
   frequence: string;
   description?: string | null;
+  prix_libre: boolean;
 }
 
 export const taxeApi = {

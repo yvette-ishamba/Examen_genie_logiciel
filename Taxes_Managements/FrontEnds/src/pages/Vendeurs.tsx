@@ -15,6 +15,7 @@ import {
   ChevronRight,
   FileText
 } from 'lucide-react';
+import { jsPDF } from 'jspdf';
 
 export default function Vendeurs() {
   const { user } = useLogin();
@@ -91,7 +92,57 @@ export default function Vendeurs() {
 function VendeurDetailView({ data }: { data: VendeurMe }) {
 
   const handleDownloadItem = (id: number) => {
-    alert(`Téléchargement du reçu pour le paiement #${id}`);
+    const item = data.history.find(h => h.id === id);
+    if (!item) return;
+
+    const doc = new jsPDF({
+      unit: 'mm',
+      format: [80, 150], // Receipt format (80mm width)
+    });
+
+    // --- Header ---
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text("RÉPUBLIQUE DÉMOCRATIQUE", 40, 15, { align: 'center' });
+    doc.text("DU CONGO", 40, 22, { align: 'center' });
+    
+    doc.setFontSize(10);
+    doc.text("AUTORITÉ BIENVEILLANTE", 40, 30, { align: 'center' });
+    doc.text("------------------------------------------", 40, 35, { align: 'center' });
+
+    // --- Title ---
+    doc.setFontSize(12);
+    doc.text("REÇU DE PAIEMENT TAXE", 40, 45, { align: 'center' });
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Réf: ${item.reference}`, 40, 52, { align: 'center' });
+
+    // --- Vendor Info ---
+    doc.text("------------------------------------------", 40, 60, { align: 'center' });
+    doc.text(`Vendeur: ${data.nom} ${data.prenom}`, 10, 68);
+    doc.text(`ID Fiscal: ${data.identifiant_national}`, 10, 75);
+    doc.text(`Marché: ${data.emplacement}`, 10, 82);
+
+    // --- Payment Info ---
+    doc.text("------------------------------------------", 40, 90, { align: 'center' });
+    doc.setFont('helvetica', 'bold');
+    doc.text(`TAXE: ${item.taxe_nom}`, 10, 98);
+    doc.setFontSize(14);
+    doc.text(`MONTANT: ${item.montant.toLocaleString()} FCFA`, 10, 110);
+    
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    const dateStr = new Date(item.date_paiement).toLocaleString('fr-FR');
+    doc.text(`Date: ${dateStr}`, 10, 120);
+
+    // --- Footer ---
+    doc.text("------------------------------------------", 40, 130, { align: 'center' });
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'italic');
+    doc.text("Merci pour votre contribution civique.", 40, 138, { align: 'center' });
+    doc.text("Document généré numériquement.", 40, 143, { align: 'center' });
+
+    doc.save(`Recu_${item.reference}.pdf`);
   };
 
   return (

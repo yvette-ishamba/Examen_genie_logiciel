@@ -1,3 +1,6 @@
+import sys, os
+_backend = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+if _backend not in sys.path: sys.path.insert(0, _backend)
 import sys
 import os
 
@@ -23,3 +26,4 @@ def check_users():
 
 if __name__ == "__main__":
     check_users()
+
