@@ -1,5 +1,5 @@
 import React from 'react';
-import { Loader2 } from 'lucide-react';
+import { FaSpinner } from 'react-icons/fa';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger';
@@ -48,7 +48,7 @@ export default function Button({
     >
       {loading ? (
         <>
-          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          <FaSpinner className="mr-2 h-4 w-4 animate-spin" />
           {variant !== 'ghost' && <span>Traitement...</span>}
         </>
       ) : (

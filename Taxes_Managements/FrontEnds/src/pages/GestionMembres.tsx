@@ -1,7 +1,18 @@
 import { useState, useEffect } from 'react';
 import { usersApi } from '../services/api';
-import { UserCheck, UserPlus, Edit2, Search, Filter, ShieldCheck, XCircle, AlertCircle, UserX } from 'lucide-react';
+import { FaUserCheck, FaUserPlus, FaEdit, FaSearch, FaFilter, FaShieldAlt, FaTimesCircle, FaExclamationCircle, FaUserTimes } from 'react-icons/fa';
 import Button from '../components/Button';
+import { useAppDispatch, useAppSelector } from '../store/hooks';
+import { 
+  setUsers, 
+  setLoading, 
+  setError, 
+  setSearchTerm, 
+  setFilterStatus, 
+  setCurrentPage, 
+  setHasMore,
+  updateUserStatus
+} from '../store/slices/usersSlice';
 
 interface User {
   id: number;
@@ -17,12 +28,19 @@ interface User {
 }
 
 export default function GestionMembres() {
-  const [users, setUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterStatus, setFilterStatus] = useState('all');
-  
+  const dispatch = useAppDispatch();
+  const { 
+    users, 
+    loading, 
+    error, 
+    searchTerm, 
+    filterStatus, 
+    currentPage, 
+    hasMore 
+  } = useAppSelector(state => state.users);
+
+  const itemsPerPage = 10;
+
   // Modal state
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -43,26 +61,19 @@ export default function GestionMembres() {
   } | null>(null);
   const [isProcessingAction, setIsProcessingAction] = useState(false);
 
-  // Pagination state
-  const [currentPage, setCurrentPage] = useState(0);
-  const itemsPerPage = 10;
-  const [hasMore, setHasMore] = useState(true);
-
   useEffect(() => {
     fetchUsers(currentPage);
   }, [currentPage]);
 
   const fetchUsers = async (page: number) => {
-    setLoading(true);
+    dispatch(setLoading(true));
     try {
       const skip = page * itemsPerPage;
       const data = await usersApi.getAll(skip, itemsPerPage);
-      setUsers(data);
-      setHasMore(data.length === itemsPerPage);
+      dispatch(setUsers(data));
+      dispatch(setHasMore(data.length === itemsPerPage));
     } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
+      dispatch(setError(err.message));
     }
   };
 
@@ -78,10 +89,10 @@ export default function GestionMembres() {
     try {
       if (confirmConfig.action === 'validate') {
         await usersApi.validate(confirmConfig.userId);
-        setUsers(users.map(u => u.id === confirmConfig.userId ? { ...u, status: 'valide' } : u));
+        dispatch(updateUserStatus({ id: confirmConfig.userId, status: 'valide' }));
       } else {
         await usersApi.reject(confirmConfig.userId);
-        setUsers(users.map(u => u.id === confirmConfig.userId ? { ...u, status: 'rejete' } : u));
+        dispatch(updateUserStatus({ id: confirmConfig.userId, status: 'rejete' }));
       }
       setIsConfirmModalOpen(false);
     } catch (err: any) {
@@ -137,20 +148,20 @@ export default function GestionMembres() {
       {/* Filters & Search */}
       <div className="flex flex-col sm:flex-row gap-4 bg-white p-4 rounded-xl shadow-sm border border-slate-100">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
           <input 
             type="text" 
             placeholder="Rechercher par nom ou email..."
             className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20"
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => dispatch(setSearchTerm(e.target.value))}
           />
         </div>
         <div className="flex gap-2">
           <select 
             className="flex-1 sm:flex-none px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none min-w-[140px]"
             value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
+            onChange={(e) => dispatch(setFilterStatus(e.target.value))}
           >
             <option value="all">Tous les statuts</option>
             <option value="valide">Validés</option>
@@ -204,17 +215,17 @@ export default function GestionMembres() {
                     <td className="px-6 py-4">
                       {user.status === 'valide' ? (
                         <div className="flex items-center gap-1.5 text-green-600 text-xs font-bold">
-                          <ShieldCheck className="w-4 h-4" />
+                          <FaShieldAlt className="w-4 h-4" />
                           <span>Validé</span>
                         </div>
                       ) : user.status === 'rejete' ? (
                         <div className="flex items-center gap-1.5 text-red-600 text-xs font-bold">
-                          <XCircle className="w-4 h-4" />
+                          <FaTimesCircle className="w-6 h-6" />
                           <span>Rejeté</span>
                         </div>
                       ) : (
                         <div className="flex items-center gap-1.5 text-amber-600 text-xs font-bold">
-                          <AlertCircle className="w-4 h-4" />
+                          <FaExclamationCircle className="w-4 h-4" />
                           <span>En attente</span>
                         </div>
                       )}
@@ -228,14 +239,14 @@ export default function GestionMembres() {
                               className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
                               title="Valider"
                             >
-                              <UserCheck className="w-4 h-4" />
+                               <FaUserCheck className="w-4 h-4" />
                             </button>
                             <button 
                               onClick={() => openConfirmModal(user.id, user.full_name, 'reject')}
                               className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                               title="Rejeter"
                             >
-                              <UserX className="w-4 h-4" />
+                               <FaUserTimes className="w-4 h-4" />
                             </button>
                           </>
                         )}
@@ -245,7 +256,7 @@ export default function GestionMembres() {
                             className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                             title="Modifier"
                           >
-                            <Edit2 className="w-4 h-4" />
+                            <FaEdit className="w-4 h-4" />
                           </button>
                         )}
                       </div>
@@ -266,7 +277,7 @@ export default function GestionMembres() {
             <Button 
               variant="secondary" 
               size="sm" 
-              onClick={() => setCurrentPage(prev => Math.max(0, prev - 1))}
+              onClick={() => dispatch(setCurrentPage(Math.max(0, currentPage - 1)))}
               disabled={currentPage === 0 || loading}
               className="flex-1 sm:flex-none"
             >
@@ -275,7 +286,7 @@ export default function GestionMembres() {
             <Button 
               variant="secondary" 
               size="sm" 
-              onClick={() => setCurrentPage(prev => prev + 1)}
+              onClick={() => dispatch(setCurrentPage(currentPage + 1))}
               disabled={!hasMore || loading}
               className="flex-1 sm:flex-none"
             >
@@ -293,7 +304,7 @@ export default function GestionMembres() {
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in duration-200">
             <div className="p-6 text-center space-y-4">
               <div className={`mx-auto w-16 h-16 rounded-full flex items-center justify-center ${confirmConfig.action === 'validate' ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'}`}>
-                {confirmConfig.action === 'validate' ? <UserCheck className="w-8 h-8" /> : <UserX className="w-8 h-8" />}
+                {confirmConfig.action === 'validate' ? <FaUserCheck className="w-8 h-8" /> : <FaUserTimes className="w-8 h-8" />}
               </div>
               
               <div className="space-y-2">
@@ -332,7 +343,7 @@ export default function GestionMembres() {
             <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
               <h2 className="text-xl font-bold text-slate-800">Modifier le membre</h2>
               <button onClick={() => setIsEditModalOpen(false)} className="text-slate-400 hover:text-slate-600 transition-colors">
-                <XCircle className="w-6 h-6" />
+                <FaTimesCircle className="w-6 h-6" />
               </button>
             </div>
             
