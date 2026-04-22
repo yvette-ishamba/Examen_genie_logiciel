@@ -24,7 +24,8 @@ dist-ssr
 *.sw?
 
 # Python
-__pycache__/
+*__pycache__/
+*__pycache__/
 *.py[cod]
 
 # Virtual env
