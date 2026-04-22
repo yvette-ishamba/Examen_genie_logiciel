@@ -2,8 +2,8 @@ import sys
 import os
 from sqlalchemy import text
 
-# Add the Backend directory to sys.path
-backend_path = os.path.dirname(os.path.abspath(__file__))
+# Resolve the Backend root (two levels up from app/migrations/)
+backend_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(backend_path)
 
 from app.database import engine

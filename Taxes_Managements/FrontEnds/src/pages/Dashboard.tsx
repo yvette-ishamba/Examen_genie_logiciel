@@ -34,7 +34,7 @@ export default function Dashboard() {
     labels: chartLabels,
     datasets: [
       {
-        label: 'Recettes (FCFA)',
+        label: 'Recettes (FC)',
         data: chartValues,
         backgroundColor: '#003f87',
         borderRadius: 8,
@@ -110,7 +110,7 @@ export default function Dashboard() {
           label: (ctx: any) => {
             const total = ctx.dataset.data.reduce((a: number, b: number) => a + b, 0);
             const pct = total > 0 ? ((ctx.parsed / total) * 100).toFixed(1) : '0';
-            return ` ${ctx.parsed.toLocaleString('fr-FR')} FCFA (${pct}%)`;
+            return ` ${ctx.parsed.toLocaleString('fr-FR')} FC (${pct}%)`;
           },
         },
       },
@@ -149,7 +149,7 @@ export default function Dashboard() {
             <span className="text-[1.75rem] lg:text-[2.25rem] font-black leading-tight tracking-tight">
               {summary?.total_today.toLocaleString('fr-FR') || '0'}
             </span>
-            <span className="text-lg font-bold opacity-80">FCFA</span>
+            <span className="text-lg font-bold opacity-80">FC</span>
           </div>
           <div className="mt-4 flex items-center gap-2 bg-white/10 w-fit px-3 py-1.5 rounded-full backdrop-blur-sm border border-white/5">
             <span className="text-[10px] font-bold">
@@ -210,33 +210,74 @@ export default function Dashboard() {
         </div>
         
         {/* Vendeurs Impayés Card */}
-        <div className="bg-tertiary-container/10 p-5 rounded-2xl border border-tertiary/10 flex items-center gap-4 cursor-pointer hover:bg-tertiary-container/15 transition-colors">
-          <div className="bg-tertiary-container p-3 rounded-xl shadow-sm">
-            <span className="material-symbols-outlined text-white" style={{ fontVariationSettings: "'FILL' 1" }}>warning</span>
+        <div className="bg-surface-container-lowest p-6 rounded-3xl border border-outline-variant/10 shadow-sm space-y-4">
+          <div className="flex items-center gap-4">
+            <div className="bg-tertiary-container p-3 rounded-xl shadow-sm">
+              <span className="material-symbols-outlined text-white" style={{ fontVariationSettings: "'FILL' 1" }}>warning</span>
+            </div>
+            <div className="flex-1">
+              <p className="font-black text-on-surface tracking-tight">Vendeurs Impayés</p>
+              <p className="text-[10px] text-on-surface-variant font-bold uppercase tracking-wider">Situation par type de taxe</p>
+            </div>
           </div>
-          <div className="flex-1">
-            <p className="font-bold text-on-tertiary-fixed-variant">Vendeurs Impayés</p>
-            <p className="text-sm text-on-tertiary-fixed-variant/70">
-              {summary?.unpaid_vendeurs_count || 0} dossiers critiques à traiter
-            </p>
+          
+          <div className="space-y-2">
+            {data?.unpaid_by_tax.map((item, idx) => (
+              <div key={idx} className="flex justify-between items-center bg-surface-container/30 p-3 rounded-2xl border border-outline-variant/5">
+                <div>
+                  <p className="text-xs font-black text-on-surface">{item.taxe_name}</p>
+                  <p className="text-[10px] text-on-surface-variant font-medium">Non collectés aujourd'hui</p>
+                </div>
+                <div className="bg-tertiary/10 text-tertiary px-3 py-1 rounded-full text-xs font-black">
+                  {item.count}
+                </div>
+              </div>
+            ))}
+            {(!data?.unpaid_by_tax || data.unpaid_by_tax.length === 0) && (
+              <div className="text-center py-4 text-xs font-bold text-on-surface-variant/40">
+                Excellent ! Tous les vendeurs sont à jour.
+              </div>
+            )}
           </div>
-          <span className="material-symbols-outlined text-tertiary">chevron_right</span>
         </div>
 
         {/* Signalements Card */}
-        <div className="bg-surface-container-lowest p-5 rounded-2xl border border-outline-variant/10 flex items-center gap-4 cursor-pointer hover:shadow-md transition-all">
-          <div className="bg-surface-container-high p-3 rounded-xl">
-            <span className="material-symbols-outlined text-on-surface-variant">report_problem</span>
+        <div className="bg-surface-container-lowest p-6 rounded-3xl border border-outline-variant/10 shadow-sm space-y-4">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-4">
+              <div className="bg-surface-container-high p-3 rounded-xl text-on-surface-variant">
+                <span className="material-symbols-outlined">report_problem</span>
+              </div>
+              <div>
+                <p className="font-black text-on-surface tracking-tight">Derniers Signalements</p>
+                <p className="text-[10px] text-on-surface-variant font-bold uppercase tracking-wider">{summary?.pending_signals_count || 0} en attente</p>
+              </div>
+            </div>
+            <span className="text-primary text-xs font-bold cursor-pointer hover:underline">Tout voir</span>
           </div>
-          <div className="flex-1">
-            <p className="font-bold">Signalements en attente</p>
-            <p className="text-sm text-on-surface-variant">
-              {summary?.pending_signals_count || 0} nouveaux incidents signalés
-            </p>
+
+          <div className="space-y-3">
+            {data?.recent_signals.map((signal) => (
+              <div key={signal.id} className="flex gap-4 p-3 rounded-2xl hover:bg-surface-container/20 transition-colors border border-transparent hover:border-outline-variant/10">
+                <div className="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center flex-shrink-0">
+                  <span className="material-symbols-outlined text-on-surface-variant text-lg">person</span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex justify-between items-start">
+                    <p className="text-xs font-black text-on-surface truncate">{signal.sujet}</p>
+                    <span className="text-[9px] font-bold text-on-surface-variant/60 whitespace-nowrap">{signal.time_ago}</span>
+                  </div>
+                  <p className="text-[10px] text-on-surface-variant/80 font-medium truncate">Par {signal.auteur_name}</p>
+                </div>
+                <div className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${signal.statut === 'en attente' ? 'bg-amber-500 animate-pulse' : 'bg-green-500'}`} />
+              </div>
+            ))}
+            {(!data?.recent_signals || data.recent_signals.length === 0) && (
+              <div className="text-center py-4 text-xs font-bold text-on-surface-variant/40">
+                Aucun signalement récent.
+              </div>
+            )}
           </div>
-          {summary && summary.pending_signals_count > 0 && (
-            <div className="bg-error text-white text-[10px] font-black px-2 py-1 rounded-full animate-pulse">NOUVEAU</div>
-          )}
         </div>
       </div>
 
@@ -271,7 +312,7 @@ function ActivityItem({ name, location, time, amount }: { name: string; location
         <p className="text-xs text-on-surface-variant">{location} • {time}</p>
       </div>
       <div className="text-right">
-        <p className="font-black text-secondary">{amount} FCFA</p>
+        <p className="font-black text-secondary">{amount} FC</p>
         <span className="text-[10px] font-bold bg-secondary-container text-on-secondary-container px-2 py-0.5 rounded-full uppercase tracking-tighter">PAYÉ</span>
       </div>
     </div>

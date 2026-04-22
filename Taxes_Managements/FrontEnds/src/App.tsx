@@ -10,6 +10,7 @@ import Taxes from './pages/Taxes';
 import Signalements from './pages/Signalements';
 import ValidationPending from './pages/ValidationPending';
 import GestionMembres from './pages/GestionMembres';
+import Rapports from './pages/Rapports';
 import { taxeApi } from './services/taxe_api';
 
 import ProtectedRoute from './ui/ProtectedRoute';
@@ -103,6 +104,10 @@ const router = createBrowserRouter([
           {
             path: 'membres',
             element: <GestionMembres />,
+          },
+          {
+            path: 'rapports',
+            element: <Rapports />,
           },
         ],
       },

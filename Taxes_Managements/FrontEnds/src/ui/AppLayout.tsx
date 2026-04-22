@@ -28,7 +28,7 @@ export default function AppLayout() {
         <div className="p-6 border-b border-stone-100 flex items-center gap-3">
           <span className="material-symbols-outlined text-primary text-2xl">account_balance</span>
           <h1 className="font-['Public_Sans'] font-black text-lg text-primary tracking-tight">
-            Autorité
+            Congo Tax App
           </h1>
         </div>
         
@@ -55,7 +55,7 @@ export default function AppLayout() {
           <div className="flex lg:hidden items-center gap-3">
             <span className="material-symbols-outlined text-primary text-2xl">account_balance</span>
             <h1 className="font-['Public_Sans'] font-black text-xl text-primary tracking-tight">
-              Autorité
+              Congo Tax App
             </h1>
           </div>
 
@@ -94,7 +94,7 @@ export default function AppLayout() {
         </main>
 
         {/* BottomNavBar - Mobile/Tablet Only */}
-        <nav className="lg:hidden fixed bottom-0 left-0 w-full flex justify-around items-center px-2 pb-6 pt-2 bg-white/85 backdrop-blur-xl z-50 rounded-t-xl shadow-[0_-8px_24px_rgba(27,28,28,0.06)] border-t border-stone-200/20">
+        <nav className="lg:hidden fixed bottom-0 left-0 w-full flex overflow-x-auto justify-start items-center px-2 pb-6 pt-2 bg-white/85 backdrop-blur-xl z-50 rounded-t-xl shadow-[0_-8px_24px_rgba(27,28,28,0.06)] border-t border-stone-200/20 no-scrollbar">
           <MobileNav user={user} />
         </nav>
       </div>
@@ -146,6 +146,7 @@ function getNavItems(user: any) {
       { to: "/vendeurs", icon: "groups", label: "Vendeurs" },
       { to: "/membres", icon: "person_search", label: "Membres" },
       { to: "/taxes", icon: "settings_suggest", label: "Taxes" },
+      { to: "/rapports", icon: "analytics", label: "Rapports" },
       { to: "/signalements", icon: "report_problem", label: "Signalements" }
     );
   } else if (user?.role === 'Agent de Collecte') {

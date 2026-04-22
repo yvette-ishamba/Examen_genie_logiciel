@@ -1,8 +1,16 @@
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { type RootState } from '../store';
 import { signalementsApi } from '../services/api';
-import { Plus, X, Check, XCircle, Clock } from 'lucide-react';
+import { FaPlus, FaTimes, FaCheck, FaTimesCircle, FaClock } from 'react-icons/fa';
+import { useAppDispatch, useAppSelector } from '../store/hooks';
+import { 
+  setSignalements, 
+  setLoading, 
+  setError, 
+  addSignalement, 
+  updateSignalementStatusInList 
+} from '../store/slices/signalementsSlice';
 
 interface Signalement {
   id: number;
@@ -14,61 +22,60 @@ interface Signalement {
 }
 
 export default function Signalements() {
-  const user = useSelector((state: RootState) => state.auth.user);
+  const dispatch = useAppDispatch();
+  const { signalements: allSignalements, loading } = useAppSelector(state => state.signalements);
+  const { user } = useSelector((state: RootState) => state.auth);
+
   const isVendeur = user?.role === 'Vendeur';
   const isAutoriteLocale = user?.role === 'Autorité Locale';
 
-  const [signalements, setSignalements] = useState<Signalement[]>([]);
-  const [loading, setLoading] = useState(true);
+  const signalements = isVendeur 
+    ? allSignalements.filter(s => s.user_id === user?.id)
+    : allSignalements;
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newSujet, setNewSujet] = useState('');
   const [newDescription, setNewDescription] = useState('');
-
-  const fetchSignalements = async () => {
-    try {
-      setLoading(true);
-      const data = await signalementsApi.getAll();
-      // If user is Vendeur, only show their own. If Autorite Locale, show all.
-      // Assuming the backend returns all for now, we filter in frontend if needed,
-      // but ideally backend handles it. For now let's just filter for Vendeur.
-      if (isVendeur) {
-        setSignalements(data.filter((s: Signalement) => s.user_id === user.id));
-      } else {
-        setSignalements(data);
-      }
-    } catch (error) {
-      console.error("Failed to fetch signalements", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
+    const fetchSignalements = async () => {
+      dispatch(setLoading(true));
+      try {
+        const data = await signalementsApi.getAll();
+        dispatch(setSignalements(data));
+      } catch (err: any) {
+        dispatch(setError(err.message || 'Erreur lors du chargement'));
+      }
+    };
     fetchSignalements();
-  }, [user]);
+  }, [dispatch]);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
     try {
-      await signalementsApi.create({
-        sujet: newSujet,
-        description: newDescription
+      const created = await signalementsApi.create({ 
+        sujet: newSujet, 
+        description: newDescription 
       });
-      setIsModalOpen(false);
+      dispatch(addSignalement(created));
       setNewSujet('');
       setNewDescription('');
-      fetchSignalements();
-    } catch (error) {
-      console.error("Failed to create signalement", error);
+      setIsModalOpen(false);
+    } catch (err) {
+      alert('Erreur lors de la création');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleUpdateStatus = async (id: number, statut: string) => {
     try {
       await signalementsApi.updateStatus(id, statut);
-      fetchSignalements();
-    } catch (error) {
-      console.error("Failed to update status", error);
+      dispatch(updateSignalementStatusInList({ id, statut }));
+    } catch (err) {
+      alert('Erreur lors de la mise à jour');
     }
   };
 
@@ -78,7 +85,7 @@ export default function Signalements() {
       case 'confirmé':
         return (
           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">
-            <Check className="w-3 h-3 mr-1" />
+            <FaCheck className="w-3 h-3 mr-1" />
             Confirmé
           </span>
         );
@@ -86,7 +93,7 @@ export default function Signalements() {
       case 'rejeté':
         return (
           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 border border-red-200">
-            <XCircle className="w-3 h-3 mr-1" />
+            <FaTimesCircle className="w-3 h-3 mr-1" />
             Rejeté
           </span>
         );
@@ -94,7 +101,7 @@ export default function Signalements() {
       default:
         return (
           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 border border-yellow-200">
-            <Clock className="w-3 h-3 mr-1" />
+            <FaClock className="w-3 h-3 mr-1" />
             En attente
           </span>
         );
@@ -113,7 +120,7 @@ export default function Signalements() {
             onClick={() => setIsModalOpen(true)}
             className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
           >
-            <Plus className="w-4 h-4 mr-2" />
+            <FaPlus className="w-4 h-4 mr-2" />
             Nouveau Signalement
           </button>
         )}
@@ -161,14 +168,14 @@ export default function Signalements() {
                           className="inline-flex items-center p-1.5 border border-transparent rounded-full shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
                           title="Confirmer"
                         >
-                          <Check className="w-4 h-4" />
+                          <FaCheck className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => handleUpdateStatus(s.id, 'rejeté')}
                           className="inline-flex items-center p-1.5 border border-transparent rounded-full shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
                           title="Rejeter"
                         >
-                          <X className="w-4 h-4" />
+                          <FaTimes className="w-4 h-4" />
                         </button>
                       </div>
                     )}

@@ -17,9 +17,11 @@ function getStatus(frequence: string): 'ACTIF' | 'PÉRIODIQUE' {
 
 interface TaxeCardProps {
   taxe: TaxeOut;
+  onEdit?: (taxe: TaxeOut) => void;
+  onDelete?: (id: number) => void;
 }
 
-export default function TaxCard({ taxe }: TaxeCardProps) {
+export default function TaxCard({ taxe, onEdit, onDelete }: TaxeCardProps) {
   const status = getStatus(taxe.frequence);
   const period = getPeriodLabel(taxe.frequence);
 
@@ -39,26 +41,52 @@ export default function TaxCard({ taxe }: TaxeCardProps) {
         }`}>
           {status}
         </span>
-        <button className="text-outline-variant hover:text-primary transition-colors">
-          <span className="material-symbols-outlined text-xl">edit</span>
-        </button>
+        <div className="flex gap-2">
+          <button 
+            onClick={() => onEdit?.(taxe)}
+            className="text-outline-variant hover:text-primary transition-colors bg-white/50 hover:bg-primary/10 rounded-lg p-1"
+            title="Modifier"
+          >
+            <span className="material-symbols-outlined text-lg">edit</span>
+          </button>
+          <button 
+            onClick={() => {
+              if (window.confirm("Êtes-vous sûr de vouloir supprimer cette taxe ?")) {
+                onDelete?.(taxe.id);
+              }
+            }}
+            className="text-outline-variant hover:text-error transition-colors bg-white/50 hover:bg-error/10 rounded-lg p-1"
+            title="Supprimer"
+          >
+            <span className="material-symbols-outlined text-lg">delete</span>
+          </button>
+        </div>
       </div>
 
       <h3 className="text-lg font-bold text-on-surface mb-1">{taxe.nom}</h3>
 
       <div className="flex justify-between items-end">
-        <div>
+        <div className="flex-1 mr-4">
           <p className="text-xs font-semibold text-on-surface-variant mb-0.5">{taxe.frequence}</p>
-          <p className="text-[10px] text-on-surface-variant/70 italic">
+          <p className="text-[10px] text-on-surface-variant/70 italic leading-snug">
             {taxe.description ?? 'Aucune description'}
           </p>
         </div>
-        <div className="text-right">
-          <p className="text-2xl font-black text-primary leading-tight">{formatAmount(taxe.montant_base)}</p>
-          <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-tighter">
-            XOF / {period}
-          </p>
-        </div>
+        {taxe.frequence !== 'Occasionnel' && (
+          <div className="text-right shrink-0">
+            <p className="text-2xl font-black text-primary leading-tight">{formatAmount(taxe.montant_base)}</p>
+            <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-tighter">
+              FC / {period}
+            </p>
+          </div>
+        )}
+        {taxe.frequence === 'Occasionnel' && (
+          <div className="text-right shrink-0">
+            <div className="bg-primary/5 text-primary text-[10px] font-black px-3 py-1.5 rounded-xl border border-primary/10">
+              PRIX LIBRE
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
