@@ -11,6 +11,9 @@ class TaxeBase(BaseModel):
 class TaxeCreate(TaxeBase):
     pass
 
+class TaxeUpdate(TaxeBase):
+    pass
+
 class TaxeOut(TaxeBase):
     id: int
 

@@ -6,6 +6,8 @@ interface CreateTaxesProps {
   isOpen: boolean;
   onClose: () => void;
   onCreated: (taxe: any) => void;
+  onUpdated?: (taxe: any) => void;
+  initialData?: any; // TaxeOut
 }
 
 const FREQUENCES = [
@@ -44,10 +46,28 @@ const defaultForm = (): TaxeCreate => ({
   prix_libre: false,
 });
 
-export default function CreateTaxes({ isOpen, onClose, onCreated }: CreateTaxesProps) {
+export default function CreateTaxes({ isOpen, onClose, onCreated, onUpdated, initialData }: CreateTaxesProps) {
   const [form, setForm] = useState<TaxeCreate>(defaultForm());
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Load initialData when modal opens
+  React.useEffect(() => {
+    if (isOpen) {
+      if (initialData) {
+        setForm({
+          nom: initialData.nom,
+          montant_base: initialData.montant_base,
+          frequence: initialData.frequence,
+          description: initialData.description || '',
+          prix_libre: initialData.prix_libre || false,
+        });
+      } else {
+        setForm(defaultForm());
+      }
+      setError(null);
+    }
+  }, [isOpen, initialData]);
 
   if (!isOpen) return null;
 
@@ -82,8 +102,13 @@ export default function CreateTaxes({ isOpen, onClose, onCreated }: CreateTaxesP
 
     setLoading(true);
     try {
-      const newTaxe = await taxeApi.create(form);
-      onCreated(newTaxe);
+      if (initialData && initialData.id) {
+        const updatedTaxe = await taxeApi.update(initialData.id, form);
+        if (onUpdated) onUpdated(updatedTaxe);
+      } else {
+        const newTaxe = await taxeApi.create(form);
+        onCreated(newTaxe);
+      }
       setForm(defaultForm());
       onClose();
     } catch (err: any) {
@@ -103,8 +128,8 @@ export default function CreateTaxes({ isOpen, onClose, onCreated }: CreateTaxesP
         {/* Modal Header */}
         <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-outline-variant/10">
           <div>
-            <h2 className="text-lg font-black text-on-surface">Nouvelle Taxe</h2>
-            <p className="text-xs text-on-surface-variant">Configurer une nouvelle catégorie de taxe</p>
+            <h2 className="text-lg font-black text-on-surface">{initialData ? 'Modifier Taxe' : 'Nouvelle Taxe'}</h2>
+            <p className="text-xs text-on-surface-variant">{initialData ? 'Modifier les informations de la taxe' : 'Configurer une nouvelle catégorie de taxe'}</p>
           </div>
           <button
             onClick={onClose}

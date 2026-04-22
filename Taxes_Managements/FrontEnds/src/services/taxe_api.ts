@@ -43,4 +43,19 @@ export const taxeApi = {
       body: JSON.stringify(payload),
     });
   },
+
+  /** Update an existing tax */
+  update: async (id: number, payload: TaxeBase): Promise<TaxeOut> => {
+    return request(`/taxes/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(payload),
+    });
+  },
+
+  /** Delete a tax */
+  delete: async (id: number): Promise<{ok: boolean, message: string}> => {
+    return request(`/taxes/${id}`, {
+      method: 'DELETE',
+    });
+  },
 };

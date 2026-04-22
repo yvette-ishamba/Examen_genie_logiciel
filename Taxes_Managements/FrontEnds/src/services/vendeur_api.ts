@@ -31,7 +31,9 @@ export interface VendeurMe {
 }
 
 export interface VendeurStatusOut extends VendeurViewOut {
-  status: string;
+  status_daily: string;
+  status_monthly: string;
+  status_yearly: string;
   derniere_collecte: string | null;
   montant_total: number;
 }

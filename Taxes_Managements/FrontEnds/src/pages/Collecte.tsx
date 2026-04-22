@@ -83,6 +83,13 @@ function CollecteAdminView() {
   const dispatch = useAppDispatch();
   const { listData, agents, isLoading, error } = useAppSelector((s) => s.collecteAdmin);
   const [currentPage, setCurrentPage] = useState(listData?.page || 1);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filteredItems = listData?.items.filter(item => 
+    item.vendeur_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    item.reference.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    item.agent_name.toLowerCase().includes(searchQuery.toLowerCase())
+  ) || [];
 
   const loadPage = useCallback(async (page: number) => {
     dispatch(setCollecteLoading(true));
@@ -132,6 +139,20 @@ function CollecteAdminView() {
         </div>
       </div>
 
+      {/* Search Input for Admin */}
+      <div className="relative group">
+        <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant group-focus-within:text-primary transition-colors">
+          search
+        </span>
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Rechercher une collecte (Vendeur, Réf, Agent)..."
+          className="w-full bg-white border border-outline-variant/10 px-12 py-3 rounded-2xl text-sm outline-none ring-1 ring-outline-variant/10 focus:ring-primary/40 transition-all font-medium shadow-sm"
+        />
+      </div>
+
       {/* Agent Leaderboard */}
       <section className="space-y-2">
         <h3 className="text-[11px] font-black text-on-surface-variant uppercase tracking-[0.2em] px-1">
@@ -165,7 +186,7 @@ function CollecteAdminView() {
                 <p className="text-sm font-black text-primary">
                   {agent.total_collected.toLocaleString('fr-FR')}
                 </p>
-                <p className="text-[9px] font-bold text-on-surface-variant uppercase tracking-widest">FCFA</p>
+                <p className="text-[9px] font-bold text-on-surface-variant uppercase tracking-widest">FC</p>
               </div>
             </div>
           ))}
@@ -203,14 +224,14 @@ function CollecteAdminView() {
                     <span className="text-xs font-bold text-on-surface-variant">Chargement...</span>
                   </td>
                 </tr>
-              ) : listData?.items.length === 0 ? (
+              ) : filteredItems.length === 0 ? (
                 <tr>
                   <td colSpan={4} className="px-5 py-10 text-center">
                     <span className="text-xs font-bold text-on-surface-variant">Aucune collecte trouvée</span>
                   </td>
                 </tr>
               ) : (
-                listData?.items.map((item) => {
+                filteredItems.map((item) => {
                   const date = new Date(item.date_paiement);
                   const dateStr = date.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: '2-digit' });
                   const timeStr = date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
@@ -222,7 +243,7 @@ function CollecteAdminView() {
                       </td>
                       <td className="px-5 py-4">
                         <p className="text-[10px] font-black text-primary/80 uppercase">{item.taxe_name}</p>
-                        <p className="text-sm font-black text-on-surface">{item.montant.toLocaleString('fr-FR')} <span className="text-[9px] opacity-60">FCFA</span></p>
+                        <p className="text-sm font-black text-on-surface">{item.montant.toLocaleString('fr-FR')} <span className="text-[9px] opacity-60">FC</span></p>
                       </td>
                       <td className="px-5 py-4">
                         <div className="flex items-center gap-2">
@@ -278,6 +299,7 @@ function CollecteAgentView() {
 
   const [selectedTaxeId, setSelectedTaxeId] = useState<number | null>(taxes[0]?.id || null);
   const selectedTaxe = taxes.find(t => t.id === selectedTaxeId);
+  const [customAmount, setCustomAmount] = useState<number | ''>('');
 
   const [vendeurs, setVendeurs] = useState<VendeurViewOut[]>([]);
   const [selectedVendeurId, setSelectedVendeurId] = useState<number | null>(null);
@@ -333,18 +355,26 @@ function CollecteAgentView() {
       setModal({ kind: 'error', message: 'Veuillez sélectionner un vendeur et une taxe.' });
       return;
     }
+
+    const finalAmount = selectedTaxe.prix_libre ? Number(customAmount) : selectedTaxe.montant_base;
+    if (selectedTaxe.prix_libre && (!finalAmount || finalAmount <= 0)) {
+      setModal({ kind: 'error', message: 'Veuillez saisir un montant valide pour cette taxe occasionnelle.' });
+      return;
+    }
+
     setPaymentLoading(true);
     try {
       const reference = `PAY-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
       await paiementApi.create({
         vendeur_id: selectedVendeurId,
         taxe_id: selectedTaxeId,
-        montant: selectedTaxe.montant_base,
+        montant: finalAmount,
         reference,
         date_paiement: selectedDate ? new Date(selectedDate + 'T00:00:00').toISOString() : undefined,
       });
-      setModal({ kind: 'success', message: `Le paiement de ${selectedTaxe.montant_base.toLocaleString('fr-FR')} FCFA pour ${selectedVendeur?.noms ?? 'ce vendeur'} a été enregistré.` });
+      setModal({ kind: 'success', message: `Le paiement de ${finalAmount.toLocaleString('fr-FR')} FC pour ${selectedVendeur?.noms ?? 'ce vendeur'} a été enregistré.` });
       setSelectedVendeurId(null);
+      if (selectedTaxe.prix_libre) setCustomAmount('');
     } catch (err: any) {
       setModal({ kind: 'error', message: err.message || "Erreur lors de l'enregistrement du paiement." });
     } finally {
@@ -456,13 +486,22 @@ function CollecteAgentView() {
             <span className="material-symbols-outlined text-2xl">calendar_today</span>
           </div>
           <div className="flex-1">
-            <input 
-              type="date" 
-              value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
-              className="w-full bg-transparent border-none outline-none font-bold text-on-surface"
-            />
-            <p className="text-[10px] text-on-surface-variant font-medium mt-0.5">La date sera initialisée à la dernière collecte du vendeur.</p>
+            <div className="flex items-center justify-between">
+              <input 
+                type="date" 
+                value={selectedDate}
+                onChange={(e) => setSelectedDate(e.target.value)}
+                className="bg-transparent border-none outline-none font-bold text-on-surface"
+              />
+              <button
+                type="button"
+                onClick={() => setSelectedDate(todayIso())}
+                className="text-[10px] font-black text-primary bg-primary/10 px-2 py-1 rounded-lg hover:bg-primary/20 transition-colors uppercase"
+              >
+                Aujourd'hui
+              </button>
+            </div>
+            <p className="text-[10px] text-on-surface-variant font-medium mt-0.5">La date est initialisée à la dernière collecte pour faciliter le suivi, mais vous pouvez utiliser aujourd'hui.</p>
           </div>
         </div>
       </section>
@@ -474,7 +513,7 @@ function CollecteAgentView() {
           {taxes.map(taxe => (
             <div
               key={taxe.id}
-              onClick={() => setSelectedTaxeId(taxe.id)}
+              onClick={() => { setSelectedTaxeId(taxe.id); if (selectedTaxeId !== taxe.id) setCustomAmount(''); }}
               className={`relative bg-surface-container-lowest p-5 rounded-3xl border-2 transition-all cursor-pointer active:scale-95 ${selectedTaxeId === taxe.id ? 'border-primary shadow-lg shadow-primary/10' : 'border-outline-variant/10 hover:border-primary/30 shadow-sm'}`}
             >
               <div className={`absolute top-4 right-4 w-6 h-6 rounded-full flex items-center justify-center transition-all ${selectedTaxeId === taxe.id ? 'bg-primary text-white scale-100' : 'bg-surface-container border border-outline-variant/30 scale-0'}`}>
@@ -482,18 +521,54 @@ function CollecteAgentView() {
               </div>
               <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-4 transition-colors ${selectedTaxeId === taxe.id ? 'bg-primary text-white' : 'bg-primary/10 text-primary'}`}>
                 <span className="material-symbols-outlined text-2xl">
-                  {taxe.frequence === 'Journalière' ? 'calendar_today' : taxe.frequence === 'Mensuelle' ? 'event' : 'stars'}
+                  {taxe.frequence.includes('Journal') ? 'calendar_today' : taxe.frequence.includes('Mensu') ? 'event' : taxe.frequence.includes('Annu') ? 'calendar_month' : 'bolt'}
                 </span>
               </div>
               <h5 className={`font-black tracking-tight transition-colors ${selectedTaxeId === taxe.id ? 'text-primary' : 'text-on-surface'}`}>{taxe.nom}</h5>
-              <div className="mt-2 text-right">
-                <p className={`text-xl font-black leading-none ${selectedTaxeId === taxe.id ? 'text-primary' : 'text-on-surface'}`}>{taxe.montant_base.toLocaleString('fr-FR')}</p>
-                <p className="text-[9px] font-black opacity-60 uppercase tracking-widest mt-1">CDF</p>
-              </div>
+              
+              {!taxe.prix_libre && (
+                <div className="mt-2 text-right">
+                  <p className={`text-xl font-black leading-none ${selectedTaxeId === taxe.id ? 'text-primary' : 'text-on-surface'}`}>{taxe.montant_base.toLocaleString('fr-FR')}</p>
+                  <p className="text-[9px] font-black opacity-60 uppercase tracking-widest mt-1">CDF</p>
+                </div>
+              )}
+              {taxe.prix_libre && (
+                <div className="mt-2 text-right">
+                  <p className={`text-xs font-bold italic ${selectedTaxeId === taxe.id ? 'text-primary' : 'text-on-surface-variant'}`}>Prix libre</p>
+                </div>
+              )}
             </div>
           ))}
         </div>
       </section>
+
+      {/* Custom Amount Input Section - Standard Input Style */}
+      {selectedTaxe?.prix_libre && (
+        <section className="w-full sm:w-[80%] px-4 animate-in fade-in slide-in-from-top-2 duration-300">
+          <div className="bg-surface-container-lowest p-5 rounded-3xl border border-outline-variant/10 shadow-sm space-y-3">
+            <div className="flex items-center gap-2 px-1">
+              <span className="material-symbols-outlined text-primary text-lg">payments</span>
+              <label className="text-[11px] font-black text-on-surface-variant uppercase tracking-widest">
+                Montant à Collecter (CDF) *
+              </label>
+            </div>
+            <div className="relative">
+              <input
+                type="number"
+                placeholder="Entrez le montant..."
+                value={customAmount}
+                onChange={(e) => setCustomAmount(e.target.value ? Number(e.target.value) : '')}
+                className="w-full bg-surface-container px-4 py-3.5 rounded-2xl text-sm font-bold outline-none ring-1 ring-outline-variant/30 focus:ring-primary/60 transition-all"
+                autoFocus
+              />
+              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-black text-on-surface-variant/40">CDF</span>
+            </div>
+            <p className="text-[10px] text-on-surface-variant/60 font-medium px-1 italic">
+              Cette taxe est à prix libre. Le montant doit être saisi manuellement.
+            </p>
+          </div>
+        </section>
+      )}
 
       {/* Payment Result Modal */}
       {modal && (
