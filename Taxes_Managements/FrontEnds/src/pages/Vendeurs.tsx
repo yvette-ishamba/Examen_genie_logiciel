@@ -1,52 +1,65 @@
-import { useEffect, useState } from 'react';
-import { useLogin } from '../ui/loginContext';
+import { useEffect } from 'react';
 import { vendeurApi } from '../services/vendeur_api';
 import type { VendeurMe, VendeurStatusOut } from '../services/vendeur_api';
+import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { 
-  ArrowLeft, 
-  Download, 
-  CheckCircle2, 
-  AlertCircle, 
-  MapPin, 
-  Wallet, 
-  Search,
-  Filter,
-  ChevronLeft,
-  ChevronRight,
-  FileText
-} from 'lucide-react';
+  setVendorData, 
+  setAdminList, 
+  setLoading, 
+  setError, 
+  setPage, 
+  setPeriod, 
+  setSearchQuery 
+} from '../store/slices/vendeursSlice';
+import { 
+  FaArrowLeft, 
+  FaDownload, 
+  FaCheckCircle, 
+  FaExclamationCircle, 
+  FaMapMarkerAlt, 
+  FaWallet, 
+  FaSearch,
+  FaFilter,
+  FaChevronLeft,
+  FaChevronRight,
+  FaFileAlt
+} from 'react-icons/fa';
+import { jsPDF } from 'jspdf';
 
 export default function Vendeurs() {
-  const { user } = useLogin();
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [vendorData, setVendorData] = useState<VendeurMe | null>(null);
-  const [adminList, setAdminList] = useState<VendeurStatusOut[]>([]);
-  const [page, setPage] = useState(0);
-  const [period, setPeriod] = useState<'daily' | 'weekly' | 'monthly'>('daily');
+  const dispatch = useAppDispatch();
+  const { user } = useAppSelector(state => state.auth);
+  const { 
+    vendorData, 
+    adminList, 
+    loading, 
+    error, 
+    page, 
+    period, 
+    searchQuery 
+  } = useAppSelector(state => state.vendeurs);
+  
   const limit = 10;
 
   useEffect(() => {
     const fetchData = async () => {
-      setLoading(true);
-      setError(null);
+      dispatch(setLoading(true));
+      dispatch(setError(null));
       try {
         if (user?.role === 'Vendeur') {
           const data = await vendeurApi.getMe();
-          setVendorData(data);
+          dispatch(setVendorData(data));
         } else {
           const data = await vendeurApi.getAll(page * limit, limit, period);
-          setAdminList(data);
+          dispatch(setAdminList(data));
         }
       } catch (err: any) {
-        setError(err.message || "Une erreur est survenue lors de la récupération des données.");
-      } finally {
-        setLoading(false);
+        dispatch(setError(err.message || "Une erreur est survenue lors de la récupération des données."));
       }
     };
 
     fetchData();
-  }, [user, page, period]);
+  }, [user, page, period, dispatch]);
 
   if (loading) {
     return (
@@ -59,7 +72,7 @@ export default function Vendeurs() {
   if (error) {
     return (
       <div className="p-6 text-center">
-        <AlertCircle className="mx-auto h-12 w-12 text-error mb-4" />
+        <FaExclamationCircle className="mx-auto h-12 w-12 text-error mb-4" />
         <h3 className="text-lg font-bold text-on-surface">Erreur</h3>
         <p className="text-on-surface-variant mb-6">{error}</p>
         <button 
@@ -80,9 +93,7 @@ export default function Vendeurs() {
     <VendeurListView 
       list={adminList} 
       page={page} 
-      setPage={setPage} 
       period={period} 
-      setPeriod={setPeriod} 
     />
   );
 }
@@ -91,7 +102,57 @@ export default function Vendeurs() {
 function VendeurDetailView({ data }: { data: VendeurMe }) {
 
   const handleDownloadItem = (id: number) => {
-    alert(`Téléchargement du reçu pour le paiement #${id}`);
+    const item = data.history.find(h => h.id === id);
+    if (!item) return;
+
+    const doc = new jsPDF({
+      unit: 'mm',
+      format: [80, 150], // Receipt format (80mm width)
+    });
+
+    // --- Header ---
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text("RÉPUBLIQUE DÉMOCRATIQUE", 40, 15, { align: 'center' });
+    doc.text("DU CONGO", 40, 22, { align: 'center' });
+    
+    doc.setFontSize(10);
+    doc.text("CONGO TAX APP", 40, 30, { align: 'center' });
+    doc.text("------------------------------------------", 40, 35, { align: 'center' });
+
+    // --- Title ---
+    doc.setFontSize(12);
+    doc.text("REÇU DE PAIEMENT TAXE", 40, 45, { align: 'center' });
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Réf: ${item.reference}`, 40, 52, { align: 'center' });
+
+    // --- Vendor Info ---
+    doc.text("------------------------------------------", 40, 60, { align: 'center' });
+    doc.text(`Vendeur: ${data.nom} ${data.prenom}`, 10, 68);
+    doc.text(`ID Fiscal: ${data.identifiant_national}`, 10, 75);
+    doc.text(`Marché: ${data.emplacement}`, 10, 82);
+
+    // --- Payment Info ---
+    doc.text("------------------------------------------", 40, 90, { align: 'center' });
+    doc.setFont('helvetica', 'bold');
+    doc.text(`TAXE: ${item.taxe_nom}`, 10, 98);
+    doc.setFontSize(14);
+    doc.text(`MONTANT: ${item.montant.toLocaleString()} FC`, 10, 110);
+    
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    const dateStr = new Date(item.date_paiement).toLocaleString('fr-FR');
+    doc.text(`Date: ${dateStr}`, 10, 120);
+
+    // --- Footer ---
+    doc.text("------------------------------------------", 40, 130, { align: 'center' });
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'italic');
+    doc.text("Merci pour votre contribution civique.", 40, 138, { align: 'center' });
+    doc.text("Document généré numériquement.", 40, 143, { align: 'center' });
+
+    doc.save(`Recu_${item.reference}.pdf`);
   };
 
   return (
@@ -100,7 +161,7 @@ function VendeurDetailView({ data }: { data: VendeurMe }) {
       <div className="bg-white p-4 flex items-center justify-between border-b border-outline-variant sticky top-0 z-10">
         <div className="flex items-center gap-4">
           <button className="p-2 text-primary hover:bg-primary/10 rounded-full transition-colors">
-            <ArrowLeft className="h-6 w-6" />
+            <FaArrowLeft className="h-6 w-6" />
           </button>
           <h1 className="text-xl font-bold text-primary">Détails Vendeur</h1>
         </div>
@@ -128,7 +189,7 @@ function VendeurDetailView({ data }: { data: VendeurMe }) {
                 <span className={`px-4 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 ${
                   data.status === 'À JOUR' ? 'bg-secondary-container text-secondary' : 'bg-red-100 text-error'
                 }`}>
-                  {data.status === 'À JOUR' ? <CheckCircle2 className="h-3 w-3" /> : <AlertCircle className="h-3 w-3" />}
+                  {data.status === 'À JOUR' ? <FaCheckCircle className="h-3 w-3" /> : <FaExclamationCircle className="h-3 w-3" />}
                   {data.status}
                 </span>
                 <div className="text-right">
@@ -141,7 +202,7 @@ function VendeurDetailView({ data }: { data: VendeurMe }) {
           <div className="mt-4">
             <h2 className="text-3xl font-black text-on-surface leading-tight">{data.nom} {data.prenom}</h2>
             <div className="flex items-center gap-1.5 text-on-surface-variant mt-2 font-medium">
-              <MapPin className="h-4 w-4 text-primary shrink-0" />
+              <FaMapMarkerAlt className="h-4 w-4 text-primary shrink-0" />
               <span>{data.emplacement}</span>
             </div>
           </div>
@@ -151,7 +212,7 @@ function VendeurDetailView({ data }: { data: VendeurMe }) {
         <div className="grid grid-cols-2 gap-4">
           <div className="bg-surface-container-low rounded-3xl p-5 border border-outline-variant shadow-sm transition-transform hover:scale-[1.02]">
             <span className="text-[10px] uppercase font-bold text-on-surface-variant block mb-1">TOTAL PAYÉ</span>
-            <span className="text-xl font-black text-primary">{data.total_paye.toLocaleString()} FCFA</span>
+            <span className="text-xl font-black text-primary">{data.total_paye.toLocaleString()} FC</span>
           </div>
           <div className="bg-surface-container-low rounded-3xl p-5 border border-outline-variant shadow-sm transition-transform hover:scale-[1.02]">
             <span className="text-[10px] uppercase font-bold text-on-surface-variant block mb-1">DERNIÈRE COLLECTE</span>
@@ -171,7 +232,7 @@ function VendeurDetailView({ data }: { data: VendeurMe }) {
           <div className="space-y-3">
             {data.history.length === 0 ? (
               <div className="py-10 text-center bg-white rounded-3xl border border-dashed border-outline-variant">
-                <FileText className="h-10 w-10 text-on-surface-variant/30 mx-auto mb-2" />
+                <FaFileAlt className="h-10 w-10 text-on-surface-variant/30 mx-auto mb-2" />
                 <p className="text-on-surface-variant text-sm">Aucun paiement enregistré</p>
               </div>
             ) : (
@@ -180,7 +241,7 @@ function VendeurDetailView({ data }: { data: VendeurMe }) {
                   <div className="absolute left-0 top-0 bottom-0 w-1 bg-secondary rounded-l-full"></div>
                   <div className="flex items-center gap-4">
                     <div className="h-12 w-12 bg-secondary-container/30 rounded-2xl flex items-center justify-center">
-                      <Wallet className="h-6 w-6 text-secondary" />
+                      <FaWallet className="h-6 w-6 text-secondary" />
                     </div>
                     <div>
                       <h4 className="font-bold text-on-surface leading-tight text-base">{item.taxe_nom}</h4>
@@ -190,12 +251,12 @@ function VendeurDetailView({ data }: { data: VendeurMe }) {
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="font-black text-on-surface text-lg">{item.montant.toLocaleString()} FCFA</div>
+                    <div className="font-black text-on-surface text-lg">{item.montant.toLocaleString()} FC</div>
                     <button 
                       onClick={() => handleDownloadItem(item.id)}
                       className="text-[10px] font-bold text-primary flex items-center gap-1 justify-end hover:underline"
                     >
-                      <Download className="h-3 w-3" /> REÇU
+                      <FaDownload className="h-3 w-3" /> REÇU
                     </button>
                   </div>
                 </div>
@@ -208,14 +269,23 @@ function VendeurDetailView({ data }: { data: VendeurMe }) {
 
       {/* Optional Branding Footer like in mockup */}
       <p className="text-center text-[9px] uppercase tracking-[0.2em] font-medium text-on-surface-variant/60 pb-8 px-4">
-        L'AUTORITÉ BIENVEILLANTE • SYSTÈME CERTIFIÉ
+        CONGO TAX APP • SYSTÈME CERTIFIÉ
       </p>
     </div>
   );
 }
 
 // --- Admin/Agent List View ---
-function VendeurListView({ list, page, setPage, period, setPeriod }: any) {
+function VendeurListView({ list, page, period }: any) {
+  const dispatch = useAppDispatch();
+  const { searchQuery } = useAppSelector(state => state.vendeurs);
+
+  const filteredList = list.filter((v: any) => 
+    v.noms.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    v.id_nat.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    v.marche.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <div className="p-6 space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -224,36 +294,24 @@ function VendeurListView({ list, page, setPage, period, setPeriod }: any) {
           <p className="text-on-surface-variant">Surveillance des collectes et état des paiements.</p>
         </div>
         
-        <div className="flex items-center gap-2 bg-white p-1.5 rounded-2xl border border-outline-variant shadow-sm w-fit">
-          {(['daily', 'weekly', 'monthly'] as const).map((p) => (
-            <button
-              key={p}
-              onClick={() => setPeriod(p)}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-                period === p 
-                  ? 'bg-primary text-white shadow-md' 
-                  : 'text-on-surface-variant hover:bg-surface-container'
-              }`}
-            >
-              {p === 'daily' ? 'Journalier' : p === 'weekly' ? 'Hebdo' : 'Mensuel'}
-            </button>
-          ))}
-        </div>
+        {/* Removing period filter since we show all statuses now */}
       </div>
 
       {/* Filters & Search */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="relative">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-on-surface-variant" />
+          <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-on-surface-variant" />
           <input 
             type="text" 
             placeholder="Rechercher un vendeur..." 
+            value={searchQuery}
+            onChange={(e) => dispatch(setSearchQuery(e.target.value))}
             className="w-full pl-11 pr-4 py-3 bg-white border border-outline-variant rounded-2xl focus:ring-2 focus:ring-primary outline-none text-sm shadow-sm"
           />
         </div>
         <div className="flex items-center gap-2">
           <button className="flex-1 flex items-center justify-center gap-2 py-3 px-4 bg-white border border-outline-variant rounded-2xl hover:bg-surface-container transition-colors font-bold text-sm text-on-surface shadow-sm">
-            <Filter className="h-4 w-4" /> Filtres
+            <FaFilter className="h-4 w-4" /> Filtres
           </button>
         </div>
       </div>
@@ -267,17 +325,19 @@ function VendeurListView({ list, page, setPage, period, setPeriod }: any) {
                 <th className="px-6 py-4 text-xs font-black text-on-surface-variant uppercase tracking-wider">Vendeur</th>
                 <th className="px-6 py-4 text-xs font-black text-on-surface-variant uppercase tracking-wider">ID Fiscal</th>
                 <th className="px-6 py-4 text-xs font-black text-on-surface-variant uppercase tracking-wider">Marché</th>
-                <th className="px-6 py-4 text-xs font-black text-on-surface-variant uppercase tracking-wider">Statut ({period})</th>
+                <th className="px-6 py-4 text-xs font-black text-on-surface-variant uppercase tracking-wider text-center">Journalier</th>
+                <th className="px-6 py-4 text-xs font-black text-on-surface-variant uppercase tracking-wider text-center">Mensuel</th>
+                <th className="px-6 py-4 text-xs font-black text-on-surface-variant uppercase tracking-wider text-center">Annuel</th>
                 <th className="px-6 py-4 text-xs font-black text-on-surface-variant uppercase tracking-wider">Total</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant">
-              {list.length === 0 ? (
+              {filteredList.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-10 text-center text-on-surface-variant">Aucun vendeur trouvé.</td>
+                  <td colSpan={7} className="px-6 py-10 text-center text-on-surface-variant">Aucun vendeur trouvé.</td>
                 </tr>
               ) : (
-                list.map((v: VendeurStatusOut) => (
+                filteredList.map((v: VendeurStatusOut) => (
                   <tr key={v.id} className="hover:bg-surface-container-low transition-colors group">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
@@ -293,15 +353,37 @@ function VendeurListView({ list, page, setPage, period, setPeriod }: any) {
                     <td className="px-6 py-4 text-sm font-mono text-on-surface-variant">{v.id_nat}</td>
                     <td className="px-6 py-4 text-sm text-on-surface leading-tight font-medium">{v.marche}</td>
                     <td className="px-6 py-4">
-                      <span className={`px-3 py-1 rounded-full text-[10px] font-black tracking-wide uppercase flex items-center gap-1.5 w-fit ${
-                        v.status === 'À JOUR' ? 'bg-secondary-container text-secondary' : 'bg-red-100 text-error'
-                      }`}>
-                        {v.status === 'À JOUR' ? <CheckCircle2 className="h-3 w-3" /> : <AlertCircle className="h-3 w-3" />}
-                        {v.status}
-                      </span>
+                      <div className="flex justify-center">
+                        <span className={`px-3 py-1 rounded-full text-[9px] font-black tracking-wide uppercase flex items-center gap-1 w-fit ${
+                          v.status_daily === 'À JOUR' ? 'bg-secondary-container text-secondary' : 'bg-red-100 text-error'
+                        }`}>
+                          {v.status_daily === 'À JOUR' ? <FaCheckCircle className="h-2.5 w-2.5" /> : <FaExclamationCircle className="h-2.5 w-2.5" />}
+                          {v.status_daily}
+                        </span>
+                      </div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="font-black text-on-surface text-sm">{v.montant_total.toLocaleString()} FCFA</div>
+                      <div className="flex justify-center">
+                        <span className={`px-3 py-1 rounded-full text-[9px] font-black tracking-wide uppercase flex items-center gap-1 w-fit ${
+                          v.status_monthly === 'À JOUR' ? 'bg-secondary-container text-secondary' : 'bg-red-100 text-error'
+                        }`}>
+                          {v.status_monthly === 'À JOUR' ? <FaCheckCircle className="h-2.5 w-2.5" /> : <FaExclamationCircle className="h-2.5 w-2.5" />}
+                          {v.status_monthly}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex justify-center">
+                        <span className={`px-3 py-1 rounded-full text-[9px] font-black tracking-wide uppercase flex items-center gap-1 w-fit ${
+                          v.status_yearly === 'À JOUR' ? 'bg-secondary-container text-secondary' : 'bg-red-100 text-error'
+                        }`}>
+                          {v.status_yearly === 'À JOUR' ? <FaCheckCircle className="h-2.5 w-2.5" /> : <FaExclamationCircle className="h-2.5 w-2.5" />}
+                          {v.status_yearly}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="font-black text-on-surface text-sm">{v.montant_total.toLocaleString()} FC</div>
                       {v.derniere_collecte && (
                         <div className="text-[10px] text-on-surface-variant mt-0.5">Vu le {new Date(v.derniere_collecte).toLocaleDateString()}</div>
                       )}
@@ -318,18 +400,18 @@ function VendeurListView({ list, page, setPage, period, setPeriod }: any) {
           <p className="text-xs text-on-surface-variant font-medium">Page {page + 1}</p>
           <div className="flex items-center gap-2">
             <button 
-              onClick={() => setPage(Math.max(0, page - 1))}
+              onClick={() => dispatch(setPage(Math.max(0, page - 1)))}
               disabled={page === 0}
               className="p-2 bg-white border border-outline-variant rounded-xl disabled:opacity-30 disabled:cursor-not-allowed hover:bg-surface-container-high transition-colors shadow-sm"
             >
-              <ChevronLeft className="h-4 w-4" />
+              <FaChevronLeft className="h-4 w-4" />
             </button>
             <button 
-              onClick={() => setPage(page + 1)}
+              onClick={() => dispatch(setPage(page + 1))}
               disabled={list.length < 10}
               className="p-2 bg-white border border-outline-variant rounded-xl disabled:opacity-30 disabled:cursor-not-allowed hover:bg-surface-container-high transition-colors shadow-sm"
             >
-              <ChevronRight className="h-4 w-4" />
+              <FaChevronRight className="h-4 w-4" />
             </button>
           </div>
         </div>

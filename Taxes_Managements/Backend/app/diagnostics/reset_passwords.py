@@ -1,3 +1,6 @@
+import sys, os
+_backend = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+if _backend not in sys.path: sys.path.insert(0, _backend)
 from app.database import SessionLocal
 from app.models.user import User
 from app.utils.security import pwd_context
@@ -20,3 +23,4 @@ def reset():
 
 if __name__ == '__main__':
     reset()
+

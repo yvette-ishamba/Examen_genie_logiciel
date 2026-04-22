@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { Clock, ShieldCheck, LogOut, RefreshCcw, XCircle, AlertCircle } from 'lucide-react';
+import { FaClock, FaShieldAlt, FaSignOutAlt, FaSync, FaTimesCircle, FaExclamationCircle } from 'react-icons/fa';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { logout, restoreSession } from '../store/slices/authSlice';
 import Button from '../components/Button';
@@ -33,16 +33,16 @@ export default function ValidationPending() {
           <div className="relative">
             <div className={`w-24 h-24 ${user?.status === 'rejete' ? 'bg-red-50' : 'bg-blue-50'} rounded-full flex items-center justify-center ${user?.status !== 'rejete' ? 'animate-pulse' : ''}`}>
               {user?.status === 'rejete' ? (
-                <XCircle className="w-12 h-12 text-red-600" />
+                <FaTimesCircle className="w-12 h-12 text-red-600" />
               ) : (
-                <Clock className="w-12 h-12 text-[#0047a5]" />
+                <FaClock className="w-12 h-12 text-[#0047a5]" />
               )}
             </div>
             <div className="absolute -bottom-2 -right-2 bg-white p-2 rounded-full shadow-md">
               {user?.status === 'rejete' ? (
-                <AlertCircle className="w-6 h-6 text-red-500" />
+                <FaExclamationCircle className="w-6 h-6 text-red-500" />
               ) : (
-                <ShieldCheck className="w-6 h-6 text-green-500" />
+                <FaShieldAlt className="w-6 h-6 text-green-500" />
               )}
             </div>
           </div>
@@ -73,7 +73,7 @@ export default function ValidationPending() {
           <Button 
             onClick={handleRefresh}
             className="w-full"
-            leftIcon={<RefreshCcw className="w-4 h-4" />}
+            leftIcon={<FaSync className="w-4 h-4" />}
           >
             Vérifier le statut
           </Button>
@@ -82,7 +82,7 @@ export default function ValidationPending() {
             variant="secondary"
             onClick={handleLogout}
             className="w-full text-slate-600 hover:text-red-600 hover:bg-red-50"
-            leftIcon={<LogOut className="w-4 h-4" />}
+            leftIcon={<FaSignOutAlt className="w-4 h-4" />}
           >
             Se déconnecter
           </Button>

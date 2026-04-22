@@ -26,6 +26,7 @@ class VendeurViewOut(BaseModel):
     telephone: str
     id_nat: str
     marche: str
+    derniere_collecte: Optional[datetime] = None
 
     class Config:
         from_attributes = True
@@ -50,6 +51,8 @@ class VendeurMe(BaseModel):
     history: List[PaymentHistoryItem]
 
 class VendeurStatusOut(VendeurViewOut):
-    status: str
+    status_daily: str
+    status_monthly: str
+    status_yearly: str
     derniere_collecte: Optional[datetime]
     montant_total: float

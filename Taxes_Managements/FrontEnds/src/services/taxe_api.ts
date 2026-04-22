@@ -6,6 +6,7 @@ export interface TaxeOut {
   montant_base: number;
   frequence: string;
   description?: string | null;
+  prix_libre: boolean;
 }
 
 export interface TaxeCreate {
@@ -13,6 +14,7 @@ export interface TaxeCreate {
   montant_base: number;
   frequence: string;
   description?: string;
+  prix_libre: boolean;
 }
 
 export interface TaxeBase {
@@ -20,6 +22,7 @@ export interface TaxeBase {
   montant_base: number;
   frequence: string;
   description?: string | null;
+  prix_libre: boolean;
 }
 
 export const taxeApi = {
@@ -38,6 +41,21 @@ export const taxeApi = {
     return request('/taxes/', {
       method: 'POST',
       body: JSON.stringify(payload),
+    });
+  },
+
+  /** Update an existing tax */
+  update: async (id: number, payload: TaxeBase): Promise<TaxeOut> => {
+    return request(`/taxes/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(payload),
+    });
+  },
+
+  /** Delete a tax */
+  delete: async (id: number): Promise<{ok: boolean, message: string}> => {
+    return request(`/taxes/${id}`, {
+      method: 'DELETE',
     });
   },
 };

@@ -6,25 +6,73 @@ interface CreateTaxesProps {
   isOpen: boolean;
   onClose: () => void;
   onCreated: (taxe: any) => void;
+  onUpdated?: (taxe: any) => void;
+  initialData?: any; // TaxeOut
 }
 
 const FREQUENCES = [
-  { value: 'Journalière', label: 'Journalière' },
-  { value: 'Mensuelle', label: 'Mensuelle' },
-  { value: 'Périodique', label: 'Périodique / Événement' },
+  {
+    value: 'Journalier',
+    label: 'Journalier',
+    icon: 'calendar_today',
+    desc: 'Collecte chaque jour',
+  },
+  {
+    value: 'Mensuel',
+    label: 'Mensuel',
+    icon: 'event',
+    desc: 'Collecte chaque mois',
+  },
+  {
+    value: 'Annuel',
+    label: 'Annuel',
+    icon: 'calendar_month',
+    desc: 'Collecte chaque année',
+  },
+  {
+    value: 'Occasionnel',
+    label: 'Occasionnel',
+    icon: 'bolt',
+    desc: "Prix défini à la collecte par l'agent",
+    prixLibre: true,
+  },
 ];
 
-export default function CreateTaxes({ isOpen, onClose, onCreated }: CreateTaxesProps) {
-  const [form, setForm] = useState<TaxeCreate>({
-    nom: '',
-    montant_base: 0,
-    frequence: 'Journalière',
-    description: '',
-  });
+const defaultForm = (): TaxeCreate => ({
+  nom: '',
+  montant_base: 0,
+  frequence: 'Journalier',
+  description: '',
+  prix_libre: false,
+});
+
+export default function CreateTaxes({ isOpen, onClose, onCreated, onUpdated, initialData }: CreateTaxesProps) {
+  const [form, setForm] = useState<TaxeCreate>(defaultForm());
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Load initialData when modal opens
+  React.useEffect(() => {
+    if (isOpen) {
+      if (initialData) {
+        setForm({
+          nom: initialData.nom,
+          montant_base: initialData.montant_base,
+          frequence: initialData.frequence,
+          description: initialData.description || '',
+          prix_libre: initialData.prix_libre || false,
+        });
+      } else {
+        setForm(defaultForm());
+      }
+      setError(null);
+    }
+  }, [isOpen, initialData]);
+
   if (!isOpen) return null;
+
+  const selectedFreq = FREQUENCES.find(f => f.value === form.frequence);
+  const isOccasionnel = form.frequence === 'Occasionnel';
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -34,18 +82,34 @@ export default function CreateTaxes({ isOpen, onClose, onCreated }: CreateTaxesP
     }));
   };
 
+  const handleFreqSelect = (value: string) => {
+    const freq = FREQUENCES.find(f => f.value === value);
+    setForm(prev => ({
+      ...prev,
+      frequence: value,
+      prix_libre: !!freq?.prixLibre,
+      montant_base: freq?.prixLibre ? 0 : prev.montant_base,
+    }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
     if (!form.nom.trim()) return setError('Le nom de la taxe est requis.');
-    if (form.montant_base <= 0) return setError('Le montant doit être supérieur à 0.');
+    if (!isOccasionnel && form.montant_base <= 0)
+      return setError('Le montant doit être supérieur à 0.');
 
     setLoading(true);
     try {
-      const newTaxe = await taxeApi.create(form);
-      onCreated(newTaxe);
-      setForm({ nom: '', montant_base: 0, frequence: 'Journalière', description: '' });
+      if (initialData && initialData.id) {
+        const updatedTaxe = await taxeApi.update(initialData.id, form);
+        if (onUpdated) onUpdated(updatedTaxe);
+      } else {
+        const newTaxe = await taxeApi.create(form);
+        onCreated(newTaxe);
+      }
+      setForm(defaultForm());
       onClose();
     } catch (err: any) {
       setError(err.message || 'Une erreur est survenue');
@@ -55,19 +119,17 @@ export default function CreateTaxes({ isOpen, onClose, onCreated }: CreateTaxesP
   };
 
   return (
-    // Backdrop
     <div
       className="fixed inset-0 z-150 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm animate-in fade-in duration-200"
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
-      {/* Modal Panel */}
       <div className="w-full max-w-md bg-surface-container-lowest rounded-t-3xl sm:rounded-3xl shadow-2xl animate-in slide-in-from-bottom-4 duration-300 overflow-hidden">
-        
+
         {/* Modal Header */}
         <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-outline-variant/10">
           <div>
-            <h2 className="text-lg font-black text-on-surface">Nouvelle Taxe</h2>
-            <p className="text-xs text-on-surface-variant">Configurer une nouvelle catégorie de taxe</p>
+            <h2 className="text-lg font-black text-on-surface">{initialData ? 'Modifier Taxe' : 'Nouvelle Taxe'}</h2>
+            <p className="text-xs text-on-surface-variant">{initialData ? 'Modifier les informations de la taxe' : 'Configurer une nouvelle catégorie de taxe'}</p>
           </div>
           <button
             onClick={onClose}
@@ -78,8 +140,8 @@ export default function CreateTaxes({ isOpen, onClose, onCreated }: CreateTaxesP
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="px-6 py-5 space-y-5">
-          
+        <form onSubmit={handleSubmit} className="px-6 py-5 space-y-5 max-h-[80vh] overflow-y-auto">
+
           {/* Error Alert */}
           {error && (
             <div className="flex items-center gap-3 bg-red-50 border border-red-100 rounded-xl p-3">
@@ -103,41 +165,73 @@ export default function CreateTaxes({ isOpen, onClose, onCreated }: CreateTaxesP
             />
           </div>
 
-          {/* Montant de base */}
-          <div className="space-y-1.5">
-            <label className="text-xs font-bold text-on-surface-variant uppercase tracking-wide">
-              Montant de Base (CDF) *
-            </label>
-            <div className="relative">
-              <input
-                type="number"
-                name="montant_base"
-                value={form.montant_base || ''}
-                onChange={handleChange}
-                placeholder="500"
-                min={1}
-                className="w-full bg-surface-container px-4 py-3 pr-16 rounded-xl text-sm outline-none ring-1 ring-outline-variant/30 focus:ring-primary/60 transition-all placeholder:text-on-surface-variant/40 font-medium"
-              />
-              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-on-surface-variant/60">CDF</span>
-            </div>
-          </div>
-
-          {/* Fréquence */}
-          <div className="space-y-1.5">
+          {/* Fréquence — card selector */}
+          <div className="space-y-2">
             <label className="text-xs font-bold text-on-surface-variant uppercase tracking-wide">
               Fréquence *
             </label>
-            <select
-              name="frequence"
-              value={form.frequence}
-              onChange={handleChange}
-              className="w-full bg-surface-container px-4 py-3 rounded-xl text-sm outline-none ring-1 ring-outline-variant/30 focus:ring-primary/60 transition-all font-medium appearance-none cursor-pointer"
-            >
+            <div className="grid grid-cols-2 gap-2">
               {FREQUENCES.map(f => (
-                <option key={f.value} value={f.value}>{f.label}</option>
+                <button
+                  key={f.value}
+                  type="button"
+                  onClick={() => handleFreqSelect(f.value)}
+                  className={`relative flex flex-col items-start gap-1 p-3 rounded-2xl border-2 text-left transition-all active:scale-95 ${
+                    form.frequence === f.value
+                      ? 'border-primary bg-primary/5 shadow-sm shadow-primary/10'
+                      : 'border-outline-variant/20 hover:border-primary/30 bg-surface-container'
+                  }`}
+                >
+                  <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${
+                    form.frequence === f.value ? 'bg-primary text-white' : 'bg-primary/10 text-primary'
+                  }`}>
+                    <span className="material-symbols-outlined text-[18px]">{f.icon}</span>
+                  </div>
+                  <span className={`text-xs font-black ${form.frequence === f.value ? 'text-primary' : 'text-on-surface'}`}>
+                    {f.label}
+                  </span>
+                  <span className="text-[10px] text-on-surface-variant leading-tight">{f.desc}</span>
+                  {/* Checkmark */}
+                  {form.frequence === f.value && (
+                    <span className="absolute top-2 right-2 material-symbols-outlined text-primary text-[16px]"
+                      style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
+                  )}
+                </button>
               ))}
-            </select>
+            </div>
           </div>
+
+          {/* Montant de base — hidden for Occasionnel */}
+          {!isOccasionnel ? (
+            <div className="space-y-1.5 animate-in fade-in duration-200">
+              <label className="text-xs font-bold text-on-surface-variant uppercase tracking-wide">
+                Montant de Base (CDF) *
+              </label>
+              <div className="relative">
+                <input
+                  type="number"
+                  name="montant_base"
+                  value={form.montant_base || ''}
+                  onChange={handleChange}
+                  placeholder="500"
+                  min={1}
+                  className="w-full bg-surface-container px-4 py-3 pr-16 rounded-xl text-sm outline-none ring-1 ring-outline-variant/30 focus:ring-primary/60 transition-all placeholder:text-on-surface-variant/40 font-medium"
+                />
+                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-on-surface-variant/60">CDF</span>
+              </div>
+            </div>
+          ) : (
+            <div className="animate-in fade-in duration-200 flex items-center gap-3 bg-amber-50 border border-amber-200 rounded-2xl p-4">
+              <span className="material-symbols-outlined text-amber-500 text-2xl flex-shrink-0"
+                style={{ fontVariationSettings: "'FILL' 1" }}>info</span>
+              <div>
+                <p className="text-xs font-black text-amber-700">Prix libre — Occasionnel</p>
+                <p className="text-[11px] text-amber-600 mt-0.5">
+                  Le montant sera saisi par l'agent au moment de la collecte.
+                </p>
+              </div>
+            </div>
+          )}
 
           {/* Description */}
           <div className="space-y-1.5">

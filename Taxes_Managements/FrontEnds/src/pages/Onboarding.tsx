@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Landmark, Store, BadgeCheck, Circle, CheckCircle2, ArrowRight } from 'lucide-react';
+import { FaLandmark, FaStore, FaCertificate, FaRegCircle, FaCheckCircle, FaArrowRight } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { setStep, setRole, updatePersonalInfo, submitOnboardingProfile, type RoleType } from '../store/slices/onboardingSlice';
@@ -114,13 +114,13 @@ export default function Onboarding() {
               className={`border-2 ${role === 'Vendeur' ? 'border-[#0047a5] bg-blue-50/30' : 'border-slate-200 bg-white hover:border-[#0047a5]'} rounded-xl p-4 flex items-center gap-4 cursor-pointer shadow-sm transition-colors`}
             >
               <div className={`w-12 h-12 rounded-lg ${role === 'Vendeur' ? 'bg-blue-100' : 'bg-slate-100'} flex items-center justify-center shrink-0`}>
-                <Store className={`w-6 h-6 ${role === 'Vendeur' ? 'text-[#0047a5]' : 'text-slate-700'}`} />
+                <FaStore className={`w-6 h-6 ${role === 'Vendeur' ? 'text-[#0047a5]' : 'text-slate-700'}`} />
               </div>
               <div className="flex-1">
                 <h3 className={`font-bold ${role === 'Vendeur' ? 'text-[#0047a5]' : 'text-slate-800'} text-sm`}>Vendeur</h3>
                 <p className="text-xs text-slate-600 mt-0.5">Commerçant, artisan ou producteur local.</p>
               </div>
-              {role === 'Vendeur' ? <CheckCircle2 className="w-5 h-5 text-[#0047a5]" /> : <Circle className="w-5 h-5 text-slate-300" />}
+              {role === 'Vendeur' ? <FaCheckCircle className="w-5 h-5 text-[#0047a5]" /> : <FaRegCircle className="w-5 h-5 text-slate-300" />}
             </div>
 
             {/* Option 2: Agent de Collecte */}
@@ -129,13 +129,13 @@ export default function Onboarding() {
               className={`border-2 ${role === 'Agent de Collecte' ? 'border-[#0047a5] bg-blue-50/30' : 'border-transparent border-slate-200 bg-white hover:border-[#0047a5]'} rounded-xl p-4 flex items-center gap-4 cursor-pointer transition-colors`}
             >
               <div className={`w-12 h-12 rounded-lg ${role === 'Agent de Collecte' ? 'bg-blue-100' : 'bg-slate-100'} flex items-center justify-center shrink-0`}>
-                <BadgeCheck className={`w-6 h-6 ${role === 'Agent de Collecte' ? 'text-[#0047a5]' : 'text-slate-700'}`} />
+                <FaCertificate className={`w-6 h-6 ${role === 'Agent de Collecte' ? 'text-[#0047a5]' : 'text-slate-700'}`} />
               </div>
               <div className="flex-1">
                 <h3 className={`font-bold ${role === 'Agent de Collecte' ? 'text-[#0047a5]' : 'text-slate-800'} text-sm`}>Agent de Collecte</h3>
                 <p className="text-xs text-slate-500 mt-0.5">Personnel autorisé pour la perception des taxes.</p>
               </div>
-              {role === 'Agent de Collecte' ? <CheckCircle2 className="w-5 h-5 text-[#0047a5]" /> : <Circle className="w-5 h-5 text-slate-300" />}
+              {role === 'Agent de Collecte' ? <FaCheckCircle className="w-5 h-5 text-[#0047a5]" /> : <FaRegCircle className="w-5 h-5 text-slate-300" />}
             </div>
 
             {/* Option 3: Autorité Locale */}
@@ -144,13 +144,13 @@ export default function Onboarding() {
               className={`border-2 ${role === 'Autorité Locale' ? 'border-[#0047a5] bg-blue-50/30' : 'border-transparent border-slate-200 bg-white hover:border-[#0047a5]'} rounded-xl p-4 flex items-center gap-4 cursor-pointer transition-colors`}
             >
               <div className={`w-12 h-12 rounded-lg ${role === 'Autorité Locale' ? 'bg-blue-100' : 'bg-slate-100'} flex items-center justify-center shrink-0`}>
-                <Landmark className={`w-6 h-6 ${role === 'Autorité Locale' ? 'text-[#0047a5]' : 'text-slate-700'}`} />
+                <FaLandmark className={`w-6 h-6 ${role === 'Autorité Locale' ? 'text-[#0047a5]' : 'text-slate-700'}`} />
               </div>
               <div className="flex-1">
                 <h3 className={`font-bold ${role === 'Autorité Locale' ? 'text-[#0047a5]' : 'text-slate-800'} text-sm`}>Autorité Locale</h3>
                 <p className="text-xs text-slate-500 mt-0.5">Administration et supervision du marché.</p>
               </div>
-              {role === 'Autorité Locale' ? <CheckCircle2 className="w-5 h-5 text-[#0047a5]" /> : <Circle className="w-5 h-5 text-slate-300" />}
+              {role === 'Autorité Locale' ? <FaCheckCircle className="w-5 h-5 text-[#0047a5]" /> : <FaRegCircle className="w-5 h-5 text-slate-300" />}
             </div>
           </div>
         </section>
@@ -257,7 +257,7 @@ export default function Onboarding() {
             </div>
             <div className="flex justify-between border-bottom pb-2">
               <span className="text-slate-500 text-sm">Téléphone</span>
-              <span className="text-slate-800 font-bold">+225 {phoneNumber}</span>
+              <span className="text-slate-800 font-bold">+243 {phoneNumber}</span>
             </div>
           </div>
         </section>
@@ -289,7 +289,7 @@ export default function Onboarding() {
               <Button 
                 onClick={handleNextStep}
                 className="w-full sm:w-[160px]"
-                rightIcon={<ArrowRight className="h-4 w-4" />}
+                rightIcon={<FaArrowRight className="h-4 w-4" />}
               >
                 Suivant
               </Button>
@@ -298,7 +298,7 @@ export default function Onboarding() {
                 onClick={handleSubmit}
                 loading={submitting}
                 className="w-full sm:w-[240px]"
-                rightIcon={!submitting && <ArrowRight className="h-4 w-4" />}
+                rightIcon={!submitting && <FaArrowRight className="h-4 w-4" />}
               >
                 Confirmer et S'inscrire
               </Button>

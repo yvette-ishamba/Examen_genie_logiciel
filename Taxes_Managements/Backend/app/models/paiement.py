@@ -13,6 +13,7 @@ class Paiement(Base):
     
     montant = Column(Float)
     date_paiement = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=datetime.utcnow)
     reference = Column(String(255), unique=True, index=True)
     
     # Optional relationships

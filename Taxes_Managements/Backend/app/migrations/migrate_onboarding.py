@@ -1,3 +1,11 @@
+import sys
+import os
+
+# Resolve the Backend root (two levels up from app/migrations/)
+_backend_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+if _backend_path not in sys.path:
+    sys.path.insert(0, _backend_path)
+
 import logging
 from sqlalchemy import text
 from app.database import engine

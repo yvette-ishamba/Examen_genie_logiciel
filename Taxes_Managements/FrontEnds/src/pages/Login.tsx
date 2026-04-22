@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { Landmark, User, Lock, Eye, LogIn, UserPlus, ShieldCheck } from 'lucide-react';
+import { FaLandmark, FaUser, FaLock, FaEye, FaEyeSlash, FaSignInAlt, FaUserPlus, FaShieldAlt } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { useLogin } from '../ui/loginContext';
 import { usersApi } from '../services/api';
-import { ArrowLeft } from 'lucide-react';
+import { FaArrowLeft } from 'react-icons/fa';
 import Button from '../components/Button';
 
 export default function Login() {
@@ -11,6 +11,7 @@ export default function Login() {
   const { login, isLoading, error, clearError } = useLogin();
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   
   const [showResetForm, setShowResetForm] = useState(false);
   const [resetEmail, setResetEmail] = useState('');
@@ -58,7 +59,7 @@ export default function Login() {
       <div className="flex-1 flex flex-col items-center justify-center py-10 px-4 sm:px-6">
         <div className="flex flex-col items-center mb-8 sm:mb-10">
           <div className="bg-white p-3 rounded-2xl shadow-sm mb-4 border border-gray-100">
-            <Landmark className="w-10 h-10 text-[#0047a5]" strokeWidth={2} />
+            <FaLandmark className="w-10 h-10 text-[#0047a5]" strokeWidth={2} />
           </div>
           <h1 className="text-xl sm:text-2xl font-bold text-[#0047a5] tracking-wide text-center uppercase">
             Gestion des Taxes
@@ -88,7 +89,7 @@ export default function Login() {
                     </label>
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                        <User className="h-4 w-4 text-slate-400" />
+                        <FaUser className="h-4 w-4 text-slate-400" />
                       </div>
                       <input
                         type="text"
@@ -116,17 +117,24 @@ export default function Login() {
                     </div>
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                        <Lock className="h-4 w-4 text-slate-400" />
+                        <FaLock className="h-4 w-4 text-slate-400" />
                       </div>
                       <input
-                        type="password"
+                        type={showPassword ? "text" : "password"}
                         placeholder="••••••••"
                         className="block w-full pl-10 pr-10 py-3 bg-[#f1f5f9] border border-transparent rounded-lg text-sm text-slate-800 focus:bg-white focus:border-[#0047a5] focus:ring-1 focus:ring-[#0047a5] transition-colors outline-none placeholder-slate-400 font-medium tracking-widest"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                       />
-                      <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center cursor-pointer hover:bg-slate-200 rounded-r-lg px-1">
-                        <Eye className="h-4 w-4 text-slate-500" />
+                      <div 
+                        className="absolute inset-y-0 right-0 pr-3.5 flex items-center cursor-pointer hover:text-[#0047a5] transition-colors"
+                        onClick={() => setShowPassword(!showPassword)}
+                      >
+                        {showPassword ? (
+                          <FaEyeSlash className="h-4 w-4 text-slate-500" />
+                        ) : (
+                          <FaEye className="h-4 w-4 text-slate-500" />
+                        )}
                       </div>
                     </div>
                   </div>
@@ -138,7 +146,7 @@ export default function Login() {
                       type="submit"
                       loading={isLoading}
                       fullWidth
-                      rightIcon={!isLoading && <LogIn className="h-4 w-4" />}
+                      rightIcon={!isLoading && <FaSignInAlt className="h-4 w-4" />}
                     >
                       Se connecter
                     </Button>
@@ -151,7 +159,7 @@ export default function Login() {
                   onClick={() => setShowResetForm(false)}
                   className="flex items-center text-xs font-bold text-slate-500 hover:text-[#0047a5] mb-6 transition-colors"
                 >
-                  <ArrowLeft className="w-3.5 h-3.5 mr-1" />
+                  <FaArrowLeft className="w-3.5 h-3.5 mr-1" />
                   Retour à la connexion
                 </button>
                 <h2 className="text-xl md:text-2xl font-bold text-slate-800 mb-1">
@@ -207,7 +215,7 @@ export default function Login() {
                 variant="outline"
                 fullWidth
                 onClick={() => navigate('/onboarding')}
-                leftIcon={<UserPlus className="h-4 w-4" />}
+                leftIcon={<FaUserPlus className="h-4 w-4" />}
               >
                 Demander un accès
               </Button>
@@ -217,7 +225,7 @@ export default function Login() {
 
         {/* Security Badge */}
         <div className="mt-8 flex items-center justify-center text-slate-400">
-          <ShieldCheck className="w-4 h-4 mr-1.5" />
+          <FaShieldAlt className="w-4 h-4 mr-1.5" />
           <span className="text-[0.65rem] font-bold uppercase tracking-widest">
             Connexion sécurisée AES-256
           </span>
