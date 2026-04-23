@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { usersApi } from '../services/api';
-import { FaUserCheck, FaUserPlus, FaEdit, FaSearch, FaFilter, FaShieldAlt, FaTimesCircle, FaExclamationCircle, FaUserTimes } from 'react-icons/fa';
+import { FaUserCheck, FaEdit, FaSearch, FaShieldAlt, FaTimesCircle, FaExclamationCircle, FaUserTimes } from 'react-icons/fa';
 import Button from '../components/Button';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { 
@@ -31,8 +31,7 @@ export default function GestionMembres() {
   const dispatch = useAppDispatch();
   const { 
     users, 
-    loading, 
-    error, 
+    loading,  
     searchTerm, 
     filterStatus, 
     currentPage, 

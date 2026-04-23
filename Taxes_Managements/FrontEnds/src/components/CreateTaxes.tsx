@@ -71,7 +71,6 @@ export default function CreateTaxes({ isOpen, onClose, onCreated, onUpdated, ini
 
   if (!isOpen) return null;
 
-  const selectedFreq = FREQUENCES.find(f => f.value === form.frequence);
   const isOccasionnel = form.frequence === 'Occasionnel';
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
