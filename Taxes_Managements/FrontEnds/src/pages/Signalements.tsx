@@ -1,42 +1,53 @@
-import { useState, useEffect } from 'react';
-import { useSelector } from 'react-redux';
-import { type RootState } from '../store';
-import { signalementsApi } from '../services/api';
-import { FaPlus, FaTimes, FaCheck, FaTimesCircle, FaClock } from 'react-icons/fa';
-import { useAppDispatch, useAppSelector } from '../store/hooks';
-import { 
-  setSignalements, 
-  setLoading, 
-  setError, 
-  addSignalement, 
-  updateSignalementStatusInList 
-} from '../store/slices/signalementsSlice';
+import { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
+import { type RootState } from "../store";
+import { signalementsApi } from "../services/api";
+import {
+  FaPlus,
+  FaTimes,
+  FaCheck,
+  FaTimesCircle,
+  FaClock,
+} from "react-icons/fa";
+import { useAppDispatch, useAppSelector } from "../store/hooks";
+import {
+  setSignalements,
+  setLoading,
+  setError,
+  addSignalement,
+  updateSignalementStatusInList,
+} from "../store/slices/signalementsSlice";
 
-interface Signalement {
-  id: number;
-  sujet: string;
-  description: string;
-  date_signalement: string;
-  statut: string;
-  user_id: number;
-}
+// interface Signalement {
+//   id: number;
+//   sujet: string;
+//   description: string;
+//   date_signalement: string;
+//   statut: string;
+//   user_id: number;
+// }
 
 export default function Signalements() {
   const dispatch = useAppDispatch();
-  const { signalements: allSignalements, loading } = useAppSelector(state => state.signalements);
+  const { signalements: allSignalements, loading } = useAppSelector(
+    (state) => state.signalements,
+  );
   const { user } = useSelector((state: RootState) => state.auth);
 
-  const isVendeur = user?.role === 'Vendeur';
-  const isAutoriteLocale = user?.role === 'Autorité Locale';
+  const isVendeur = user?.role === "Vendeur";
+  const isAutoriteLocale = user?.role === "Autorité Locale";
 
-  const signalements = isVendeur 
-    ? allSignalements.filter(s => s.user_id === user?.id)
+  const signalements = isVendeur
+    ? allSignalements.filter((s) => s.user_id === user?.id)
     : allSignalements;
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [newSujet, setNewSujet] = useState('');
-  const [newDescription, setNewDescription] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [newSujet, setNewSujet] = useState("");
+  const [newDescription, setNewDescription] = useState("");
+  const [expandedSignalementId, setExpandedSignalementId] = useState<
+    number | null
+  >(null);
+  // const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const fetchSignalements = async () => {
@@ -45,7 +56,7 @@ export default function Signalements() {
         const data = await signalementsApi.getAll();
         dispatch(setSignalements(data));
       } catch (err: any) {
-        dispatch(setError(err.message || 'Erreur lors du chargement'));
+        dispatch(setError(err.message || "Erreur lors du chargement"));
       }
     };
     fetchSignalements();
@@ -53,20 +64,20 @@ export default function Signalements() {
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
+    // setIsSubmitting(true);
     try {
-      const created = await signalementsApi.create({ 
-        sujet: newSujet, 
-        description: newDescription 
+      const created = await signalementsApi.create({
+        sujet: newSujet,
+        description: newDescription,
       });
       dispatch(addSignalement(created));
-      setNewSujet('');
-      setNewDescription('');
+      setNewSujet("");
+      setNewDescription("");
       setIsModalOpen(false);
     } catch (err) {
-      alert('Erreur lors de la création');
+      alert("Erreur lors de la création");
     } finally {
-      setIsSubmitting(false);
+      // setIsSubmitting(false);
     }
   };
 
@@ -75,29 +86,29 @@ export default function Signalements() {
       await signalementsApi.updateStatus(id, statut);
       dispatch(updateSignalementStatusInList({ id, statut }));
     } catch (err) {
-      alert('Erreur lors de la mise à jour');
+      alert("Erreur lors de la mise à jour");
     }
   };
 
   const getStatusBadge = (statut: string) => {
     switch (statut.toLowerCase()) {
-      case 'confirme':
-      case 'confirmé':
+      case "confirme":
+      case "confirmé":
         return (
           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">
             <FaCheck className="w-3 h-3 mr-1" />
             Confirmé
           </span>
         );
-      case 'rejete':
-      case 'rejeté':
+      case "rejete":
+      case "rejeté":
         return (
           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 border border-red-200">
             <FaTimesCircle className="w-3 h-3 mr-1" />
             Rejeté
           </span>
         );
-      case 'en attente':
+      case "en attente":
       default:
         return (
           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 border border-yellow-200">
@@ -112,8 +123,12 @@ export default function Signalements() {
     <div className="p-6 max-w-6xl mx-auto">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Signalements & Incidents</h2>
-          <p className="text-sm text-gray-500 mt-1">Gestion des rapports de fraude ou des litiges sur le terrain.</p>
+          <h2 className="text-2xl font-bold text-gray-900">
+            Signalements & Incidents
+          </h2>
+          <p className="text-sm text-gray-500 mt-1">
+            Gestion des rapports de fraude ou des litiges sur le terrain.
+          </p>
         </div>
         {isVendeur && (
           <button
@@ -139,46 +154,75 @@ export default function Signalements() {
               </li>
             ) : (
               signalements.map((s) => (
-                <li key={s.id} className="px-6 py-4 hover:bg-gray-50 transition-colors">
-                  <div className="flex items-center justify-between">
+                <li
+                  key={s.id}
+                  className="px-6 py-4 hover:bg-gray-50 transition-colors"
+                >
+                  <div className="flex items-start justify-between gap-4">
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between">
-                        <p className="text-sm font-medium text-blue-600 truncate">{s.sujet}</p>
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="text-sm font-medium text-blue-600 truncate">
+                          {s.sujet}
+                        </p>
                         <div className="ml-2 flex-shrink-0 flex">
                           {getStatusBadge(s.statut)}
                         </div>
                       </div>
-                      <div className="mt-2 flex justify-between">
-                        <div className="sm:flex">
-                          <p className="flex items-center text-sm text-gray-500">
+
+                      {/* Expandable description section */}
+                      <button
+                        onClick={() =>
+                          setExpandedSignalementId(
+                            expandedSignalementId === s.id ? null : s.id,
+                          )
+                        }
+                        className="mt-2 inline-flex items-center text-xs font-medium text-blue-600 hover:text-blue-800 transition-colors"
+                      >
+                        <span className="material-symbols-outlined text-sm mr-1">
+                          {expandedSignalementId === s.id
+                            ? "expand_less"
+                            : "expand_more"}
+                        </span>
+                        {expandedSignalementId === s.id
+                          ? "Masquer la description"
+                          : "Voir la description"}
+                      </button>
+
+                      {expandedSignalementId === s.id && (
+                        <div className="mt-3 p-3 bg-gray-50 rounded-md border border-gray-200">
+                          <p className="text-sm text-gray-700">
                             {s.description}
                           </p>
-                        </div>
-                        <div className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0">
-                          <p>
-                            Ajouté le <time dateTime={s.date_signalement}>{new Date(s.date_signalement).toLocaleDateString('fr-FR')}</time>
+                          <p className="mt-2 text-xs text-gray-500">
+                            Ajouté le{" "}
+                            <time dateTime={s.date_signalement}>
+                              {new Date(s.date_signalement).toLocaleDateString(
+                                "fr-FR",
+                              )}
+                            </time>
                           </p>
                         </div>
-                      </div>
+                      )}
                     </div>
-                    {isAutoriteLocale && s.statut.toLowerCase() === 'en attente' && (
-                      <div className="ml-6 flex items-center space-x-3">
-                        <button
-                          onClick={() => handleUpdateStatus(s.id, 'confirmé')}
-                          className="inline-flex items-center p-1.5 border border-transparent rounded-full shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-                          title="Confirmer"
-                        >
-                          <FaCheck className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => handleUpdateStatus(s.id, 'rejeté')}
-                          className="inline-flex items-center p-1.5 border border-transparent rounded-full shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-                          title="Rejeter"
-                        >
-                          <FaTimes className="w-4 h-4" />
-                        </button>
-                      </div>
-                    )}
+                    {isAutoriteLocale &&
+                      s.statut.toLowerCase() === "en attente" && (
+                        <div className="flex items-center space-x-2 flex-shrink-0">
+                          <button
+                            onClick={() => handleUpdateStatus(s.id, "confirmé")}
+                            className="inline-flex items-center p-1.5 border border-transparent rounded-full shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                            title="Confirmer"
+                          >
+                            <FaCheck className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleUpdateStatus(s.id, "rejeté")}
+                            className="inline-flex items-center p-1.5 border border-transparent rounded-full shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                            title="Rejeter"
+                          >
+                            <FaTimes className="w-4 h-4" />
+                          </button>
+                        </div>
+                      )}
                   </div>
                 </li>
               ))
@@ -189,23 +233,43 @@ export default function Signalements() {
 
       {/* Modal for creating a signalement */}
       {isModalOpen && (
-        <div className="fixed z-10 inset-0 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div
+          className="fixed z-10 inset-0 overflow-y-auto"
+          aria-labelledby="modal-title"
+          role="dialog"
+          aria-modal="true"
+        >
           <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div className="fixed inset-0 bg-black/50 transition-opacity" aria-hidden="true" onClick={() => setIsModalOpen(false)}></div>
+            <div
+              className="fixed inset-0 bg-black/50 transition-opacity"
+              aria-hidden="true"
+              onClick={() => setIsModalOpen(false)}
+            ></div>
 
-            <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            <span
+              className="hidden sm:inline-block sm:align-middle sm:h-screen"
+              aria-hidden="true"
+            >
+              &#8203;
+            </span>
 
             <div className="relative z-50 inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
               <form onSubmit={handleCreate}>
                 <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                   <div className="sm:flex sm:items-start">
                     <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
-                      <h3 className="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+                      <h3
+                        className="text-lg leading-6 font-medium text-gray-900"
+                        id="modal-title"
+                      >
                         Nouveau Signalement
                       </h3>
                       <div className="mt-4 space-y-4">
                         <div>
-                          <label htmlFor="sujet" className="block text-sm font-medium text-gray-700">
+                          <label
+                            htmlFor="sujet"
+                            className="block text-sm font-medium text-gray-700"
+                          >
                             Sujet
                           </label>
                           <input
@@ -220,7 +284,10 @@ export default function Signalements() {
                           />
                         </div>
                         <div>
-                          <label htmlFor="description" className="block text-sm font-medium text-gray-700">
+                          <label
+                            htmlFor="description"
+                            className="block text-sm font-medium text-gray-700"
+                          >
                             Description
                           </label>
                           <textarea
