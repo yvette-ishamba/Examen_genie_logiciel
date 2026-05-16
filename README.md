@@ -6,13 +6,15 @@
 
 ### 1. Tableau de Bord (Dashboard)
 Une vue d'ensemble en temps réel des recettes collectées, avec des indicateurs de croissance, le nombre de vendeurs actifs et les alertes sur les impayés.
-![Dashboard](./screenshots/dashboard.png)
+
+![Image](https://github.com/user-attachments/assets/ddb617d0-cda2-4b00-b681-73bcac292873)
 
 ### 2. Gestion des Vendeurs & Matrice de Conformité
 Un système rigoureux de suivi des paiements. La matrice affiche le statut de conformité pour chaque période (Journalier, Mensuel, Annuel).
 - **EN RETARD** : Indique qu'un paiement manque depuis la date de création du compte.
 - **À JOUR** : Confirmation que toutes les taxes dues ont été réglées.
-![Gestion des Vendeurs](./screenshots/vendeurs.png)
+
+![Image](https://github.com/user-attachments/assets/9dba0ffb-7429-4e2a-bc0b-7932b379c430)
 
 ### 3. Rapports Décisionnels (Analytique)
 Des outils visuels pour l'Autorité Locale :
@@ -20,15 +22,18 @@ Des outils visuels pour l'Autorité Locale :
 - Taux de conformité global.
 - Performance des agents collecteurs (Top agents).
 - Répartition des flux financiers par catégorie de taxe.
-![Rapports Décisionnels](./screenshots/rapports.png)
+  
+![Image](https://github.com/user-attachments/assets/2afc580a-550e-4ab6-9477-80d89bb50cfe)
 
 ### 4. Configuration des Taxes
 Interface intuitive pour définir les types de taxes, leurs montants de base et leurs fréquences de collecte. Supporte également les taxes "Occasionnelles" à prix libre.
-![Configuration des Taxes](./screenshots/taxes.png)
+
+![Image](https://github.com/user-attachments/assets/706ef52e-0398-4239-a89b-ac83e4208bd7)
 
 ### 5. Journal des Collectes
 Historique complet et détaillé de toutes les transactions effectuées sur le terrain, permettant une traçabilité totale des fonds.
-![Journal des Collectes](./screenshots/collecte.png)
+
+![Image](https://github.com/user-attachments/assets/d2d797f8-7847-4c83-b74d-19fbf836627a)
 
 ## 🛠️ Stack Technique
 
@@ -89,15 +94,21 @@ Le système utilise un contrôle d'accès basé sur les rôles (RBAC) :
 - **Autorité Locale (Administrateur)** : Accès complet aux rapports décisionnels, validation des nouveaux membres, gestion des taxes et surveillance globale.
 - **Agent de Collecte** : Enregistrement des paiements sur le terrain, consultation de l'historique des collectes et signalement d'incidents.
   - *Processus de paiement* : Sélection de la taxe et saisie du montant.
-  ![Formulaire de Paiement](./screenshots/agent_payment_form.png)
+    
+ ![Image](https://github.com/user-attachments/assets/e475f3ef-9e68-4013-b50a-86343010e737)
+  
   - *Confirmation* : Validation instantanée de la transaction.
-  ![Succès Paiement](./screenshots/agent_payment_success.png)
+    
+  ![Image](https://github.com/user-attachments/assets/551cd0c6-c073-47ae-8929-c6b783fc67e3)
 
 - **Vendeur** : Accès personnel pour consulter son statut de conformité et télécharger ses reçus de paiement.
   - *Historique & Reçus* : Suivi détaillé de toutes les taxes payées.
-  ![Historique Vendeur](./screenshots/vendeur_history.png)
+    
+  ![Image](https://github.com/user-attachments/assets/f61ce4c5-e5a4-4f83-b37c-f0b63196ef2a)
+  
   - *Signalements* : Possibilité de rapporter des problèmes directement depuis l'interface.
-  ![Modal de Signalement](./screenshots/vendeur_report_modal.png)
+    
+  ![Image](https://github.com/user-attachments/assets/786e08c8-585f-4eea-adf0-7b27f19aa01e)
 
 ## 📱 Utilisation
 
